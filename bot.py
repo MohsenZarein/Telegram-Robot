@@ -19,15 +19,28 @@ import random
 """ Logging Configuration """
 
 logger = logging.getLogger(__name__)
+
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
+
 logging.getLogger().setLevel(logging.INFO)
 logging.getLogger('telethon').setLevel(level=logging.ERROR)
+
 formatter = logging.Formatter('[%(levelname)s] %(asctime)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+
 console_handler.setFormatter(formatter)
+
 logger.addHandler(console_handler)
 
 """ End Configuration """
+
+
+
+
+MEMBERS_CSV_PATH = '/home/mohsen/VSCode/Telethon_Bot_project/members.csv'
+PENDING_QUEUE_PATH = '/home/mohsen/VSCode/Telethon_Bot_project/group_pending_queue.txt'
+TARGET_GROUP_PATH = '/home/ubuntu/telethonproj/target_groups.txt'
+WORKER_ACCOUNTS_PATH = '/home/mohsen/VSCode/Telethon_Bot_project/workers.json'
 
 
 
@@ -95,7 +108,7 @@ def Scrap_Members_From_Client_Dialog(number_of_chats_to_be_extracted):
             continue
         
 
-        with open("/home/mohsen/VSCode/Telethon_Bot_project/members.csv", 'a' , encoding="UTF-8") as fout:
+        with open(MEMBERS_CSV_PATH, 'a' , encoding="UTF-8") as fout:
             writer = csv.writer(fout , delimiter="," , lineterminator="\n")
             if File_Pointer_On_First_Row == True:
                 writer.writerow(['username','user id', 'access hash','name','group', 'group id']) 
@@ -131,7 +144,7 @@ def Scrap_Members_From_Pending_Queue():
     
     groups = []
     try:
-        with open('/home/mohsen/VSCode/Telethon_Bot_project/group_pending_queue.txt' , 'r+') as fin:
+        with open(PENDING_QUEUE_PATH , 'r+') as fin:
             groups = fin.readlines()
             if not groups:
                 logger.error('Pending Queue File is Empty !!!')
@@ -204,7 +217,7 @@ def Scrap_Members_From_Pending_Queue():
             continue
         
 
-        with open("/home/mohsen/VSCode/Telethon_Bot_project/members.csv", 'a' , encoding="UTF-8") as fout:
+        with open(MEMBERS_CSV_PATH, 'a' , encoding="UTF-8") as fout:
             writer = csv.writer(fout , delimiter="," , lineterminator="\n")
             if File_Pointer_On_First_Row == True:
                 writer.writerow(['username','user id', 'access hash','name','group', 'group id']) 
@@ -237,9 +250,9 @@ def Scrap_Members_From_Pending_Queue():
 # NOT Complete yset
 def Add_Members_To_Target_group():
     users = []
-    if os.stat('/home/mohsen/VSCode/Telethon_Bot_project/members.csv').st_size !=0 :
+    if os.stat(MEMBERS_CSV_PATH).st_size !=0 :
         try:
-            with open('/home/mohsen/VSCode/Telethon_Bot_project/members.csv','r',encoding='UTF-8') as fout:
+            with open(MEMBERS_CSV_PATH ,'r', encoding='UTF-8') as fout:
                 rows = csv.reader(fout , delimiter=',' , lineterminator="\n")
                 next(rows,None)
                 for row in rows:
@@ -266,7 +279,7 @@ def Add_Members_To_Target_group():
 
     groups = []
     try:
-        with open('/home/mohsen/VSCode/Telethon_Bot_project/target_groups.txt' , 'r') as fin:
+        with open(TARGET_GROUP_PATH , 'r') as fin:
             groups = fin.readlines()
             if not groups:
                 logger.error('Target group file is Empty !!!')
@@ -374,7 +387,7 @@ def get_channel_data():
 
 def Add_Members_To_Target_group_From_Dialog():
     users = []
-    with open('/home/mohsen/VSCode/Telethon_Bot_project/members.csv' , encoding='UTF-8') as f:
+    with open(MEMBERS_CSV_PATH , encoding='UTF-8') as f:
         rows = csv.reader(f,delimiter=",",lineterminator="\n")
         next(rows, None)
         for row in rows:
@@ -470,7 +483,7 @@ def Add_Members_To_Target_group_From_Dialog():
 
 def Add_Group_to_Pending_Queue(Group_Link):
     try:
-        with open('/home/mohsen/VSCode/Telethon_Bot_project/group_pending_queue.txt' , 'a') as fout:
+        with open(PENDING_QUEUE_PATH , 'a') as fout:
             fout.write(Group_Link)
             fout.write('\n')
 
@@ -492,7 +505,7 @@ def Add_Group_to_Pending_Queue(Group_Link):
 def Add_Group_To_Target_Groups(Group_Link):
 
     try:
-        with open('/home/mohsen/VSCode/Telethon_Bot_project/target_groups.txt' , 'a') as fout:
+        with open(TARGET_GROUP_PATH , 'a') as fout:
             fout.write(Group_Link)
             fout.write('\n')
 
@@ -522,9 +535,9 @@ def Add_Worker_Account(name , api_id , api_hash , phone):
         "limited":False
     }
 
-    if os.path.isfile('/home/mohsen/VSCode/Telethon_Bot_project/workers.json') and os.stat('/home/mohsen/VSCode/Telethon_Bot_project/workers.json').st_size !=0:
+    if os.path.isfile(WORKER_ACCOUNTS_PATH) and os.stat(WORKER_ACCOUNTS_PATH).st_size !=0:
 
-        with open('/home/mohsen/VSCode/Telethon_Bot_project/workers.json' , 'r+') as file_obj:
+        with open(WORKER_ACCOUNTS_PATH , 'r+') as file_obj:
 
             workers = json.loads(file_obj.read())
             if workers:
@@ -553,19 +566,13 @@ def Add_Worker_Account(name , api_id , api_hash , phone):
 
     else:
 
-        with open('/home/mohsen/VSCode/Telethon_Bot_project/workers.json' , 'w+') as file_obj:
+        with open(WORKER_ACCOUNTS_PATH , 'w+') as file_obj:
 
 
             file_obj.seek(0)
             file_obj.write(json.dumps(acc))
 
     sleep(5)
-
-
-
-
-
-
 
 
 
@@ -579,7 +586,7 @@ def Scrap_Members_From_Pending_Queue_2():
     
     groups = []
     try:
-        with open('/home/mohsen/VSCode/Telethon_Bot_project/group_pending_queue.txt' , 'r+') as fin:
+        with open(PENDING_QUEUE_PATH , 'r+') as fin:
             groups = fin.readlines()
             if not groups:
                 logger.error('Pending Queue File is Empty !!!')
@@ -653,7 +660,7 @@ def Scrap_Members_From_Pending_Queue_2():
             continue
         
 
-        with open("/home/mohsen/VSCode/Telethon_Bot_project/members.csv", 'a' , encoding="UTF-8") as fout:
+        with open(MEMBERS_CSV_PATH, 'a' , encoding="UTF-8") as fout:
             writer = csv.writer(fout , delimiter="," , lineterminator="\n")
             if File_Pointer_On_First_Row == True:
                 writer.writerow(['username','user id', 'access hash','name','group', 'group id']) 
@@ -766,23 +773,23 @@ if __name__ == "__main__":
                 pass
         """
        
-        Add_Group_to_Pending_Queue('https://t.me/PythonLinuxExperts')
+        #Add_Group_to_Pending_Queue('https://t.me/PythonLinuxExperts')
         #Add_Group_to_Pending_Queue('https://t.me/joinchat/CAbL_VL0rCMqY6AzbP9yTQ')
 
         #Add_Worker_Account('W10',"4343434","fekhrfejr","0999999995")
         #Add_Worker_Account('W10',"4343434","fekhrfejr","0999999995")
 
-        #Add_Group_To_Target_Groups('https://t.me/jsxjsx')
+        Add_Group_To_Target_Groups('https://t.me/jsxjsx')
         #Add_Group_To_Target_Groups('https://t.me/mtntest')
         
-        Scrap_Members_From_Pending_Queue_2()
+        #Scrap_Members_From_Pending_Queue_2()
         #Scrap_Members_From_Client_Dialog(10)
         #Scrap_Members_From_Pending_Queue()
 
         sleep(10)
 
-        Add_Members_To_Target_group_From_Dialog()
-        #Add_Members_To_Target_group()
+        #Add_Members_To_Target_group_From_Dialog()
+        Add_Members_To_Target_group()
 
         client.disconnect()
         
