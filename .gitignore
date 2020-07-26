@@ -2,4 +2,8 @@
 members.csv
 group_pending_queue.txt
 .venv
+.vscode
+target_groups.txt
+test.py
+
 
