@@ -6,6 +6,5 @@ urlpatterns = [
     path('add-target-group', views.Add_Target_Group , name='add-target-group'),
     path('add-worker', views.Add_Worker , name='add-worker'),
     path('scrap-members-from-source-groups',views.Scrap_Members , name='scrap-members'),
-    #path('profile/<str:username>' , views.profile , name='profile'),
     
 ]

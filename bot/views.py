@@ -48,9 +48,14 @@ logger.addHandler(console_handler)
 def Add_Source_Group(request):
 
     if request.method == 'POST':
+
         link = request.POST['source_group_link']
-        source_link = Source_Groups.objects.create(link=link)
-        source_link.save()
+        if not Source_Groups.objects.filter(link=link).exists():
+            source_link = Source_Groups.objects.create(link=link)
+            source_link.save()
+        else:
+            logger.error('This Target group already exists in database')
+
         return redirect('add-source-group')
             
     else:
@@ -61,9 +66,14 @@ def Add_Source_Group(request):
 def Add_Target_Group(request):
 
     if request.method == 'POST':
+
         link = request.POST['target_group_link']
-        target_link = Target_Groups.objects.create(link=link)
-        target_link.save()
+        if not Target_Groups.objects.filter(link=link).exists():
+            target_link = Target_Groups.objects.create(link=link)
+            target_link.save()
+        else:
+            logger.error('This source group already exists in database')
+
         return redirect('add-target-group')
 
     else:
@@ -74,15 +84,38 @@ def Add_Target_Group(request):
 def Add_Worker(request):
 
     if request.method == 'POST':
+
         worker_api_id = request.POST['api_id']
         worker_api_hash = request.POST['api_hash']
         worker_phone = request.POST['phone']
-        worker_acc = Workers.objects.create(
-                                            worker_api_id=worker_api_id,
-                                            worker_api_hash=worker_api_hash,
-                                            worker_phone=worker_phone
-        )
-        worker_acc.save()
+        if not Workers.objects.filter(worker_api_hash=worker_api_hash).exists():
+            worker_acc = Workers.objects.create(
+                                                worker_api_id=worker_api_id,
+                                                worker_api_hash=worker_api_hash,
+                                                worker_phone=worker_phone
+            )
+            worker_acc.save()
+
+            # Register Worker Account by entering code into terminal
+            client = TelegramClient(
+                                    worker_phone,
+                                    worker_api_id,
+                                    worker_api_hash
+            )
+            client.connect()
+            if not client.is_user_authorized():
+                client.send_code_request(worker_phone)
+                code = input("Enter the code for {0}: ".format(worker_phone))
+                client.sign_in(
+                                worker_phone,
+                                code     
+                )
+            sleep(5)
+            client.disconnect()
+        else:
+            # send a 'this worker already exists' message
+            logger.error('This worker already exists')
+
         return redirect('add-worker')
     
     else:
@@ -93,6 +126,7 @@ def Add_Worker(request):
 def Scrap_Members(request):
 
     if request.method == 'POST':
+
         threading.Thread(target=Scraping).start()
         return redirect('scrap-members')
 
@@ -161,7 +195,7 @@ def Scraping():
                 except:
                     try:
                         client(ImportChatInviteRequest(group.link.split('/')[-1]))
-                        print("joind group !!!!!!")
+                        print("joind group ")
                         sleep(random.randrange(120,200))
                         groups_entity.append(
                                         client.get_entity(group.link)
@@ -184,11 +218,11 @@ def Scraping():
                 try:
                     all_members.extend(client.get_participants(group,aggressive=True))
                     logger.info('Members scraped successfully !')
-                    logger.info('Now saving members into file ...')
+                    logger.info('Now saving members into database ...')
                 except ChatAdminRequiredError:
                     logger.error('Chat admin privileges does not allow you to scrape members ... Skipping this group')
-                    logger.error('Going for 200-250 sec sleep')
-                    sleep(random.randrange(200,250))
+                    logger.error('Going for 800-900 sec sleep')
+                    sleep(random.randrange(800,900))
                     continue
                 except FloodWaitError as err:
                     logger.error('Something wrong with the server , Have to sleep ' + err.seconds + ' seconds')
@@ -196,12 +230,12 @@ def Scraping():
                     continue
                 except PeerFloodError as err:
                     logger.error(err)
-                    logger.error('Going for 800-900 sec sleep')
-                    sleep(random.randrange(800,900))
+                    logger.error('Going for 900-1000 sec sleep')
+                    sleep(random.randrange(900,1000))
                 except Exception as err:
                     logger.error('Unexpected error while scraping ... Skipping this group')
-                    logger.error('Going for 200-250 sec sleep')
-                    sleep(random.randrange(200,250))
+                    logger.error('Going for 800-900 sec sleep')
+                    sleep(random.randrange(800,900))
                     continue
                 
 
@@ -231,6 +265,9 @@ def Scraping():
             client.disconnect()
             return
 
+        # Deleting source links , cause all members are extracted from these groups 
+        # and has been saved in database
+        Source_Groups.objects.all().delete()
 
     except ConnectionError as err:
         logger.error(err)
