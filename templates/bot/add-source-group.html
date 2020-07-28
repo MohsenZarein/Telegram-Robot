@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class=" container " style="width:800px; margin:0 auto;">
+    <div class=" container  h-100 row align-items-center justify-content-center">
+        <div class=" col">
+            <form action="{% url 'add-source-group' %}" method="POST" class=" center">
+                {% csrf_token %}
+                <div class=" form-group">
+                    <label for="source_group_link">Link</label>
+                    <input type="text" name="source_group_link" class=" form-control" required>
+                </div>
+                <input type="submit" value="Register" class=" btn btn-primary btn-block">
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
