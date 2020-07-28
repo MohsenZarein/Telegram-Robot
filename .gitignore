@@ -5,5 +5,14 @@ group_pending_queue.txt
 .vscode
 target_groups.txt
 test.py
-
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+/media
+/static
+Terminal_Bot
+ubuntu@67.223.107.178
 
