@@ -6,5 +6,6 @@ urlpatterns = [
     path('add-target-group', views.Add_Target_Group , name='add-target-group'),
     path('add-worker', views.Add_Worker , name='add-worker'),
     path('scrap-members-from-source-groups',views.Scrap_Members , name='scrap-members'),
+    path('add-members-to-target-groups', views.Add_Members , name='add-members'),
     
 ]

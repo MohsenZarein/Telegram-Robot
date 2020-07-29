@@ -1,0 +1,45 @@
+<nav class="navbar navbar-expand-md navbar-light bg-light">
+    <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapse">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div id="navbarCollapse" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+            <li class="nav-item">
+                <a href="/admin" class="nav-link">AdminArea</a>
+            </li>
+            <li class="nav-item dropdown">
+                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">Options</a>
+                <div class="dropdown-menu">
+                    <a href="{% url 'add-source-group' %}" class="dropdown-item">Add source group</a>
+                    <a href="{% url 'add-target-group' %}" class="dropdown-item">Add target group</a>
+                    <a href="{% url 'add-worker' %}" class="dropdown-item">Add worker</a>
+                    <a href="#" class="dropdown-item" data-toggle="modal" data-target="#ScrapingModal"s>Scrap members from source groups</a>
+                    <a href="{% url 'add-members' %}" class="dropdown-item">Add members to a group</a>
+                </div>
+            </li>
+        </ul>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="ScrapingModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Scraping members</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+            </div>
+            <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <a type="button" class="btn btn-primary" href="javascript:{document.getElementById('Scrap').submit()}">
+                Start
+                <form action="{% url 'scrap-members' %}" method="POST" id="Scrap">
+                    {% csrf_token %}
+                    <input type="hidden">
+                </form>
+            </a>
+            </div>
+        </div>
+        </div>
+    </div>
+</nav>

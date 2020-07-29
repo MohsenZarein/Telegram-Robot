@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class=" container " style="width:800px; margin:0 auto;">
+    <div class=" container  h-100 row align-items-center justify-content-center">
+        <div class=" col">
+            <form action="{% url 'add-members' %}" method="POST" class=" center">
+                {% csrf_token %}
+                <div class=" form-group">
+                    <label for="target_group_link">Target Group Link</label>
+                    <input type="text" name="target_group_link" class=" form-control" required>
+                </div>
+                <div class=" form-group">
+                    <label for="number_of_members">Number of members to add</label>
+                    <input type="number" name="number_of_members" class=" form-control" required>
+                </div>
+                <div class=" form-group">
+                    <label for="rate">Rate</label>
+                    <input type="number" name="rate" class=" form-control" required>
+                </div>
+                <input type="submit" value="Start adding members" class=" btn btn-primary btn-block">
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}
