@@ -16,7 +16,6 @@ from telethon.tl.functions.channels import InviteToChannelRequest , JoinChannelR
 from telethon.errors import PeerFloodError , UserPrivacyRestrictedError , ChatAdminRequiredError , FloodWaitError ,ChannelPrivateError
 
 import threading
-from multiprocessing import Process
 from time import sleep
 import datetime
 import logging
@@ -410,24 +409,19 @@ def Scraping():
                     logger.info('Now saving members into database ...')
                     for member in some_members:
                         if not Members.objects.filter(member_id=member.id).exists():
-                            accept = False
-                            try:
-                                if (member.status == UserStatusLastWeek()) or (member.status == UserStatusLastMonth()) :
-                                    accept = True
-                            except Exception as err:
-                                continue
-                            if accept == True:
-                                if member.username:
-                                    username = member.username
-                                else:
-                                    username = ""
-                                a_member = Members.objects.create(
-                                                                    member_id=member.id,
-                                                                    member_access_hash=member.access_hash,
-                                                                    member_username=username,
-                                                                    scraped_by=clients[i][1]
-                                )
-                                a_member.save()
+                        
+                            if member.username:
+                                username = member.username
+                            else:
+                                username = ""
+                            a_member = Members.objects.create(
+                                                                member_id=member.id,
+                                                                member_access_hash=member.access_hash,
+                                                                member_username=username,
+                                                                scraped_by=clients[i][1]
+                            )
+                            a_member.save()
+
 
                     logger.info('saved successfuly!')
                     logger.info('Going to sleep for 120 sec')
