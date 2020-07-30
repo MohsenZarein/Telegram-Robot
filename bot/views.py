@@ -170,6 +170,7 @@ def Add_Members(request):
         group = request.POST['target_group_link']
         number_of_members = int(request.POST['number_of_members'])
         rate = int(request.POST['rate'])
+        rate = rate + 15
    
 
         try:
@@ -183,8 +184,9 @@ def Add_Members(request):
 
 
         for worker in workers_list:
-            members_list =  Members.objects.filter(Q(scraped_by=worker) & ~Q(member_joined_groups__contains=[group]))[:3]
+            members_list =  Members.objects.filter(Q(scraped_by=worker) & ~Q(member_joined_groups__contains=[group]))[:rate]
             threading.Thread(target=Add_Members_To_Target_Groups , args=(worker,group,members_list)).start()
+            sleep(3)
 
         return redirect('add-members')
 
@@ -259,12 +261,12 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 this_member = Members.objects.get(member_id=member.member_id)
                 this_member.member_joined_groups.append(group)
                 this_member.save()
-                logger.info("User Added ... going to sleep for 800-900 sec")
-                sleep(random.randrange(800,900))
+                logger.info("User Added ... going to sleep for 900-1000 sec")
+                sleep(random.randrange(900,1000))
             except PeerFloodError:
                 logger.error("Peer flood error ! Too many requests on destination server !")
-                logger.error('Going for 900 -1000 sec sleep')
-                sleep(random.randrange(900,1000))
+                logger.error('Going for 1000 -1100 sec sleep')
+                sleep(random.randrange(1000,1100))
                 members_list.append(member)
                 continue
             except FloodWaitError as err:
@@ -273,8 +275,8 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 continue
             except UserPrivacyRestrictedError:
                 logger.error("This user's privacy does not allow you to do this ... Skipping this user")
-                logger.error("Going for 800-900 sec sleep")
-                sleep(random.randrange(800,900))
+                logger.error("Going for 900-1000 sec sleep")
+                sleep(random.randrange(900,1000))
                 continue
             except Exception:
                 try:
@@ -290,8 +292,8 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                     this_member = Members.objects.get(member_id=member.member_id)
                     this_member.member_joined_groups.append(group)
                     this_member.save()
-                    logger.info("User Added ... going to sleep for 800-900 sec")
-                    sleep(random.randrange(800,900))
+                    logger.info("User Added ... going to sleep for 900-1000 sec")
+                    sleep(random.randrange(900,1000))
                 except Exception as err:
                     logger.error(err)
                     logger.error("Going for 800-900 sec sleep")
@@ -371,20 +373,21 @@ def Scraping():
             for i in range(len(clients)):
                 try:
                     g_entity = clients[i][0].get_entity(group.link)
-                    sleep(random.randrange(60,70))
+                    sleep(random.randrange(80,100))
                     clients[i][0](JoinChannelRequest(g_entity))
                     logger.info('Joined source channel')
+                    sleep(random.randrange(80,100))
                 except Exception:
                     try:
                         clients[i][0](ImportChatInviteRequest(group.link.split('/')[-1]))
                         logger.info('Joined source chat')
-                        sleep(random.randrange(60,70))
+                        sleep(random.randrange(80,100))
                         g_entity = clients[i][0].get_entity(group.link)
-                        sleep(random.randrange(60,70))
+                        sleep(random.randrange(80,100))
 
                     except Exception as err:
                         logger.error(err)
-                        sleep(random.randrange(60,70))
+                        sleep(random.randrange(80,100))
                         continue
                 
                 logger.info("Getting members from {0} ...".format(g_entity.title))
@@ -455,6 +458,7 @@ def Scraping():
 
         
         logger.info('Action completed !')
+        Source_Groups.objects.all().delete()
 
         for i in range(len(clients)):
             clients[i][0].disconnect()
