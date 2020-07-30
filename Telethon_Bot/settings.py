@@ -81,7 +81,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'telethonbotdb',
         'USER': 'postgres',
-        'PASSWORD': '0260psql',
+        'PASSWORD': '',
         'HOST': 'localhost'
     }
 }
