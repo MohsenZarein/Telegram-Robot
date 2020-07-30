@@ -67,6 +67,19 @@ def list_of_members(request):
         return render(request , 'bot/list-of-members.html')
 
 
+
+
+def list_of_privacy_restricted_members(request):
+
+    privacy_restricted_members = Members.objects.filter(adding_permision=False)
+    context = {
+        "privacy_restricted_members":privacy_restricted_members
+    }
+    return render(request , 'bot/list-of-privacy-restricted-members.html' , context)
+
+
+
+
 def Add_Source_Group(request):
 
     if request.method == 'POST':
@@ -170,7 +183,7 @@ def Add_Members(request):
         group = request.POST['target_group_link']
         number_of_members = int(request.POST['number_of_members'])
         rate = int(request.POST['rate'])
-        rate = rate + 15
+        rate = rate + 10
    
 
         try:
@@ -184,7 +197,7 @@ def Add_Members(request):
 
 
         for worker in workers_list:
-            members_list =  Members.objects.filter(Q(scraped_by=worker) & ~Q(member_joined_groups__contains=[group]))[:rate]
+            members_list =  Members.objects.filter(Q(scraped_by=worker) & ~Q(member_joined_groups__contains=[group]) & Q(adding_permision=True))[:rate]
             threading.Thread(target=Add_Members_To_Target_Groups , args=(worker,group,members_list)).start()
             sleep(3)
 
@@ -199,8 +212,8 @@ def Add_Members(request):
 
 
 def Add_Members_To_Target_Groups(worker , group , members_list):
-    logger.info('START ADDING ...')
-    print(group)
+
+    logger.info('START ADDING TO {0}...'.format(group))
     sleep(5)
     try:
         client = TelegramClient(
@@ -226,9 +239,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 client(ImportChatInviteRequest(group.split('/')[-1]))
                 logger.info('Joined source chat')
                 sleep(random.randrange(120,200))
-                groups_entity.append(
-                                client.get_entity(group)
-                )
+                group_entity = client.get_entity(group)
                 chat_status = "private"
                 sleep(random.randrange(120,200))
 
@@ -267,7 +278,6 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 logger.error("Peer flood error ! Too many requests on destination server !")
                 logger.error('Going for 1000 -1100 sec sleep')
                 sleep(random.randrange(1000,1100))
-                members_list.append(member)
                 continue
             except FloodWaitError as err:
                 logger.error('Something wrong with the server , Have to sleep ' + err.seconds + ' seconds')
@@ -276,6 +286,9 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
             except UserPrivacyRestrictedError:
                 logger.error("This user's privacy does not allow you to do this ... Skipping this user")
                 logger.error("Going for 900-1000 sec sleep")
+                this_member = Members.objects.get(member_id=member.member_id)
+                this_member.adding_permision = False
+                this_member.save()
                 sleep(random.randrange(900,1000))
                 continue
             except Exception:

@@ -16,9 +16,15 @@
                     <a href="#" class="dropdown-item" data-toggle="modal" data-target="#ScrapingModal"s>Scrap members from source groups</a>
                     <a href="{% url 'add-members' %}" class="dropdown-item">Add members to a group</a>
                     <a href="{% url 'list-of-members'%}" class="dropdown-item">List of members that added to a group</a>
+                    <a href="{% url 'list-of-privacy-restricted-mebers'%}" class="dropdown-item">List of members that encountered error while adding </a>
                 </div>
             </li>
         </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+              <a class="nav-link"><h4>BOT - COTROL PANEL</h4></a>
+            </li>
+          </ul>
     </div>
     <!-- Modal -->
     <div class="modal fade" id="ScrapingModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">

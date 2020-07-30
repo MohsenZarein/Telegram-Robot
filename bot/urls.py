@@ -9,5 +9,6 @@ urlpatterns = [
     path('bot/scrap-members-from-source-groups',views.Scrap_Members , name='scrap-members'),
     path('bot/add-members-to-target-groups', views.Add_Members , name='add-members'),
     path('bot/list-of-members' ,views.list_of_members , name='list-of-members'),
+    path('bot/list-of-privacy-restricted-mebers', views.list_of_privacy_restricted_members , name='list-of-privacy-restricted-mebers'),
     
 ]

@@ -38,6 +38,7 @@ class Members(models.Model):
     member_username = models.CharField(max_length=100)
     member_joined_groups = ArrayField(models.CharField(max_length=200) , blank=True , default=list)
     scraped_by = models.ForeignKey(Workers , on_delete=models.DO_NOTHING , null=True)
+    adding_permision = models.BooleanField(default=True)
 
     def __str__(self):
         return self.member_id
