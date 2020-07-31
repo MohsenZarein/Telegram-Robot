@@ -12,7 +12,7 @@ from .models import Members
 
 from telethon import TelegramClient
 from telethon.tl.functions.messages import GetDialogsRequest , CheckChatInviteRequest , ImportChatInviteRequest , AddChatUserRequest 
-from telethon.tl.types import InputPeerEmpty , InputPeerChannel , InputPeerUser ,UserStatusLastMonth , UserStatusLastWeek , ChannelParticipantsSearch , InputUser
+from telethon.tl.types import InputPeerEmpty , InputPeerChannel  ,UserStatusLastMonth , UserStatusLastWeek , ChannelParticipantsSearch , InputUser,InputPeerChat
 from telethon.tl.functions.channels import InviteToChannelRequest , JoinChannelRequest , GetParticipantsRequest , GetFullChannelRequest
 from telethon.errors import PeerFloodError , UserPrivacyRestrictedError , ChatAdminRequiredError , FloodWaitError ,ChannelPrivateError
 
@@ -20,12 +20,11 @@ import threading
 from time import sleep
 import datetime
 import logging
-import json
 import os
 import socks
-import csv
 import sys
 import random
+
 
 
 """ Logging Configuration """
@@ -190,9 +189,8 @@ def Add_Members(request):
     if request.method == 'POST':
 
         group = request.POST['target_group_link']
-        number_of_members = int(request.POST['number_of_members'])
         rate = int(request.POST['rate'])
-        rate = rate + 10
+        rate = rate + 5
    
 
         try:
@@ -248,7 +246,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
             try:
                 client(ImportChatInviteRequest(group.split('/')[-1]))
                 logger.info('Joined source chat')
-                sleep(random.randrange(120,200))
+                sleep(random.randrange(300,350))
                 group_entity = client.get_entity(group)
                 chat_status = "private"
                 sleep(random.randrange(120,200))
@@ -259,11 +257,10 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 client.disconnect()
                 return
         
-        if chat_status == "public" :
-            target = InputPeerChannel(
-                                    int(group_entity.id),
-                                    int(group_entity.access_hash)
-            )
+        target = InputPeerChannel(
+                                int(group_entity.id),
+                                int(group_entity.access_hash)
+        )
 
         for member in members_list:
     
@@ -307,8 +304,9 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                         user_id=int(member.member_id),
                         access_hash=int(member.member_access_hash)
                     )
+                    chat_target = InputPeerChat(int(group_entity.chat_id))
                     client(AddChatUserRequest(
-                                              int(group_entity.id),
+                                              chat_target,
                                               user_ready_to_add,
                                               fwd_limit=100
                     ))
