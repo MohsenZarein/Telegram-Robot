@@ -381,11 +381,15 @@ def Scraping():
             groups = Source_Groups.objects.all()
         except exceptions.ObjectDoesNotExist:
             logger.error('There is not any source groups in database !')
-            client.disconnect()
+            for i in range(len(clients)):
+                clients[i][0].disconnect()
+                sleep(1)
             return
         except Exception as err:
             logger.error(err)
-            client.disconnect()
+            for i in range(len(clients)):
+                clients[i][0].disconnect()
+                sleep(1)
             return
 
         
