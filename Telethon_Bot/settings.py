@@ -81,7 +81,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'telethonbotdb',
         'USER': 'postgres',
-        'PASSWORD': '',
+        'PASSWORD': '0260psql',
         'HOST': 'localhost'
     }
 }
@@ -126,3 +126,9 @@ USE_TZ = True
 STATIC_URL = '/static/' #equivalent to {% static ...%}
 STATIC_ROOT = os.path.join(BASE_DIR , 'static')
 STATICFILES_DIRS = [os.path.join(BASE_DIR , 'Telethon_Bot/static')]
+
+
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+    messages.ERROR : 'danger'
+}

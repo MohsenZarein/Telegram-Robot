@@ -1,6 +1,7 @@
 from django.shortcuts import render , redirect
 from django.core import exceptions
 from django.http import HttpResponse
+from django.contrib import messages
 from django.db.models import Q
 
 
@@ -88,10 +89,12 @@ def Add_Source_Group(request):
         if not Source_Groups.objects.filter(link=link).exists():
             source_link = Source_Groups.objects.create(link=link)
             source_link.save()
+            messages.success(request,'Group added to sources successfuly')
+            return redirect('add-source-group')
+            
         else:
-            logger.error('This source group already exists in database')
-
-        return redirect('add-source-group')
+            messages.error(request,'This group already exists')
+            return redirect('add-source-group')
             
     else:
         return render(request , 'bot/add-source-group.html')
@@ -106,10 +109,11 @@ def Add_Target_Group(request):
         if not Target_Groups.objects.filter(link=link).exists():
             target_link = Target_Groups.objects.create(link=link)
             target_link.save()
+            messages.success(request,'Group added to Targets successfuly')
+            return redirect('add-target-group')
         else:
-            logger.error('This target group already exists in database')
-
-        return redirect('add-target-group')
+            messages.error(request,'Group already exists')
+            return redirect('add-target-group')
 
     else:
         return render(request , 'bot/add-target-group.html')
@@ -125,13 +129,13 @@ def Add_Worker(request):
         worker_phone = request.POST['phone']
 
         if not Workers.objects.filter(worker_api_hash=worker_api_hash).exists():
+
             worker_acc = Workers.objects.create(
                                                 worker_api_id=worker_api_id,
                                                 worker_api_hash=worker_api_hash,
                                                 worker_phone=worker_phone
             )
-            worker_acc.save()
-
+            
             # Register Worker Account by entering code into terminal
             try:
                 client = TelegramClient(
@@ -148,15 +152,19 @@ def Add_Worker(request):
                                     code     
                     )
                 logger.info('client authenticated')
-                sleep(5)
+                sleep(3)
                 client.disconnect()
+                worker_acc.save()
+                messages.success(request,'Worker added and signed in successfuly')
+                return redirect('add-worker')
             except Exception as err:
-                logger.error(err)
+                messages.error(request , 'Worker did not signed in correctly ! TRY AGAIN')
+                return redirect('add-worker')
                 
-        else:
-            logger.error('This worker already exists')
 
-        return redirect('add-worker')
+        else:
+            messages.error(request , 'This worker already exists ')
+            return redirect('add-worker')
     
     else:
         return render(request , 'bot/add-worker.html')
@@ -168,6 +176,7 @@ def Scrap_Members(request):
     if request.method == 'POST':
         
         threading.Thread(target=Scraping).start()
+        messages.success(request , 'SCRAPING STARTED , You can see logs in terminal')
         return redirect('index')
 
     else:
@@ -199,8 +208,9 @@ def Add_Members(request):
         for worker in workers_list:
             members_list =  Members.objects.filter(Q(scraped_by=worker) & ~Q(member_joined_groups__contains=[group]) & Q(adding_permision=True))[:rate]
             threading.Thread(target=Add_Members_To_Target_Groups , args=(worker,group,members_list)).start()
-            sleep(3)
+            sleep(2)
 
+        messages.success(request , 'ADDING MEMBERS STARTED , You can see logs in terminal')
         return redirect('add-members')
 
     
