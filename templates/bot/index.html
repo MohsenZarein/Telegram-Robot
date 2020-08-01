@@ -1,8 +1,34 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <br>
-    <br>
-    <br>
-    {% include 'partials/messages.html' %}
+<br><br><br>
+{% include 'partials/messages.html' %}
+<br><br><br><br><br><br>
+
+{% if workers %}
+    <h3 class=" text-center">لیست اکانت های ورکر فعلی ربات</h3>
+    <br><br><br>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">شماره تلفن</th>
+            <th scope="col">ای پی ای آیدی</th>
+            <th scope="col">ای پی ای هش</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for worker in workers %}
+                <tr>
+                    <th scope="row">{{forloop.counter}}</th>
+                    <td>{{worker.worker_phone}}</td>
+                    <td>{{worker.worker_api_id}}</td>
+                    <td>{{worker.worker_api_hash}}</td>
+                </tr>
+            {% endfor %}
+        </tbody> 
+    </table>
+{% else %}
+    <h4 class=" text-center">در حال حاضر هیچ اکانت ورکری اضافه نشده است</h4>
+{% endif %}
 {% endblock content %}

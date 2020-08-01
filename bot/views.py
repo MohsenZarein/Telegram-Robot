@@ -12,7 +12,7 @@ from .models import Members
 
 from telethon import TelegramClient
 from telethon.tl.functions.messages import GetDialogsRequest , CheckChatInviteRequest , ImportChatInviteRequest , AddChatUserRequest 
-from telethon.tl.types import InputPeerEmpty , InputPeerChannel  ,UserStatusLastMonth , UserStatusLastWeek , ChannelParticipantsSearch , InputUser,InputPeerChat
+from telethon.tl.types import InputPeerEmpty , InputPeerChannel  ,UserStatusLastMonth  , ChannelParticipantsSearch , InputUser,InputPeerChat
 from telethon.tl.functions.channels import InviteToChannelRequest , JoinChannelRequest , GetParticipantsRequest , GetFullChannelRequest
 from telethon.errors import PeerFloodError , UserPrivacyRestrictedError , ChatAdminRequiredError , FloodWaitError ,ChannelPrivateError
 
@@ -49,7 +49,12 @@ logger.addHandler(console_handler)
 
 
 def index(request):
-    return render(request , 'bot/index.html')
+
+    workers = Workers.objects.all()
+    context = {
+        "workers":workers
+    }
+    return render(request , 'bot/index.html' , context)
 
 
 
@@ -341,7 +346,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
         return
     except Exception as err:
         logger.error(err)
-        print('ExePTION')
+        print('EXEPTION')
         client.disconnect()
         return
 

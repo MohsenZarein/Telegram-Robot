@@ -7,14 +7,19 @@
             <li class="nav-item">
                 <a href="/admin" class="nav-link">محیط ادمین</a>
             </li>
+            <li class=" nav-item">
+                <a href="{% url 'index' %}" class=" nav-link">صفحه اصلی</a>
+            </li>
             <li class="nav-item dropdown">
                 <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">عملیات ها</a>
                 <div class="dropdown-menu">
                     <a href="{% url 'add-source-group' %}" class="dropdown-item">اضافه کردن گروه مبدا</a>
                     <a href="{% url 'add-target-group' %}" class="dropdown-item">اضافه کردن گروه هدف</a>
                     <a href="{% url 'add-worker' %}" class="dropdown-item">اضافه کردن اکانت ورکر</a>
+                    <div class="dropdown-divider"></div>
                     <a href="#" class="dropdown-item" data-toggle="modal" data-target="#ScrapingModal"s>استخراخ کاربرها از گروه های مبدا</a>
                     <a href="{% url 'add-members' %}" class="dropdown-item">اضافه کردن کاربرها به یک گروه هدف</a>
+                    <div class="dropdown-divider"></div>
                     <a href="{% url 'list-of-members'%}" class="dropdown-item">لیست کاربرانی که به گروه ها اضافه شدند</a>
                     <a href="{% url 'list-of-privacy-restricted-mebers'%}" class="dropdown-item">لیست کاربرانی که هنگام اضافه شدن با خطا مواجه شدند </a>
                 </div>
@@ -24,7 +29,7 @@
             <li class="nav-item">
               <a class="nav-link"><h4>پنل کنترل ربات</h4></a>
             </li>
-          </ul>
+        </ul>
     </div>
     <!-- Modal -->
     <div class="modal fade" id="ScrapingModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
