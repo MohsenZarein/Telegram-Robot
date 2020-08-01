@@ -52,6 +52,7 @@ def index(request):
     return render(request , 'bot/index.html')
 
 
+
 def list_of_members(request):
 
     if request.method == 'POST':
@@ -88,15 +89,16 @@ def Add_Source_Group(request):
         if not Source_Groups.objects.filter(link=link).exists():
             source_link = Source_Groups.objects.create(link=link)
             source_link.save()
-            messages.success(request,'Group added to sources successfuly')
+            messages.success(request,'این گروه به گروه های مبدا اضافه شد')
             return redirect('add-source-group')
             
         else:
-            messages.error(request,'This group already exists')
+            messages.error(request,'این گروه را قبلا اضافه کرده اید')
             return redirect('add-source-group')
             
     else:
         return render(request , 'bot/add-source-group.html')
+
 
 
 
@@ -108,14 +110,15 @@ def Add_Target_Group(request):
         if not Target_Groups.objects.filter(link=link).exists():
             target_link = Target_Groups.objects.create(link=link)
             target_link.save()
-            messages.success(request,'Group added to Targets successfuly')
+            messages.success(request,'این گروه به گروه های هدف اضافه شد')
             return redirect('add-target-group')
         else:
-            messages.error(request,'Group already exists')
+            messages.error(request,'این گروه را قبلا اضافه کرده اید')
             return redirect('add-target-group')
 
     else:
         return render(request , 'bot/add-target-group.html')
+
 
 
 
@@ -154,15 +157,15 @@ def Add_Worker(request):
                 sleep(3)
                 client.disconnect()
                 worker_acc.save()
-                messages.success(request,'Worker added and signed in successfuly')
+                messages.success(request,'اکانت ورکر با موفقیت ذخیره و ثبت شد')
                 return redirect('add-worker')
             except Exception as err:
-                messages.error(request , 'Worker did not signed in correctly ! TRY AGAIN')
+                messages.error(request , 'ثبت اکانت با خطا مواجه شد , دوباره تلاش کنید')
                 return redirect('add-worker')
                 
 
         else:
-            messages.error(request , 'This worker already exists ')
+            messages.error(request , 'این اکانت ورکر را قبلا اضافه کرده اید')
             return redirect('add-worker')
     
     else:
@@ -170,16 +173,18 @@ def Add_Worker(request):
         
 
 
+
 def Scrap_Members(request):
 
     if request.method == 'POST':
         
         threading.Thread(target=Scraping).start()
-        messages.success(request , 'SCRAPING STARTED , You can see logs in terminal')
+        messages.success(request , 'استخراج کاربران آغاز شد , میتوانید لاگ های ربات را در کنسول مشاهده کنید')
         return redirect('index')
 
     else:
         return render(request , 'bot/index.html')
+
 
 
 
@@ -208,7 +213,7 @@ def Add_Members(request):
             threading.Thread(target=Add_Members_To_Target_Groups , args=(worker,group,members_list)).start()
             sleep(2)
 
-        messages.success(request , 'ADDING MEMBERS STARTED , You can see logs in terminal')
+        messages.success(request , 'اضافه کردن کاربران به گروه هدف آغاز شد , میتوانید لاگ های ربات را در کنسول مشاهده کنید')
         return redirect('add-members')
 
     
@@ -339,6 +344,8 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
         print('ExePTION')
         client.disconnect()
         return
+
+
 
 
 def Scraping():

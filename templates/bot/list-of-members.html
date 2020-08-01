@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 
+
 {% block content %}
 <div class=" container " style="width:800px; margin:0 auto;">
     <div class=" container  h-100 row align-items-center justify-content-center">
@@ -7,10 +8,10 @@
             <form action="{% url 'list-of-members' %}" method="POST" class=" center">
                 {% csrf_token %}
                 <div class=" form-group">
-                    <label for="link">Link</label>
+                    <label for="link">لینک</label>
                     <input type="text" name="link" class=" form-control" placeholder="https://t.me/XXXXXX" required>
                 </div>
-                <input type="submit" value="Submit" class=" btn btn-primary btn-block">
+                <input type="submit" value="تایید" class=" btn btn-primary btn-block">
             </form>
         </div>
     </div>
@@ -24,6 +25,7 @@
 <table class="table table-hover">
     <thead>
       <tr>
+        <th scope="col">#</th>
         <th scope="col">ID</th>
         <th scope="col">Username</th>
       </tr>
@@ -31,6 +33,7 @@
     <tbody>
         {% for member in members %}
             <tr>
+                <th scope="row">{{forloop.counter}}</th>
                 <td>{{member.member_id}}</td>
                 {% if member.member_username %}
                     <td>@{{member.member_username}}</td>
@@ -47,6 +50,6 @@
 <br>
 <br>
 <br>
-<h4>No members added to this group yet ...</h4>
+<h4>...هیچ کاربری هنوز به این گروه اضافه نشده است</h4>
 {% endif %}
 {% endblock content %}

@@ -7,10 +7,10 @@
             <form action="{% url 'add-target-group' %}" method="POST" class=" center">
                 {% csrf_token %}
                 <div class=" form-group">
-                    <label for="target_group_link">Link</label>
+                    <label for="target_group_link">لینک</label>
                     <input type="text" name="target_group_link" class=" form-control" placeholder="https://t.me/XXXXXX" required>
                 </div>
-                <input type="submit" value="ADD" class=" btn btn-primary btn-block">
+                <input type="submit" value="اضافه کردن" class=" btn btn-primary btn-block">
             </form>
         </div>
     </div>
