@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load ranged %}
+
 {% block content %}
 {% if privacy_restricted_members %}
 <br>
@@ -9,6 +11,7 @@
 <table class="table table-hover">
     <thead>
       <tr>
+        <th scope="col">#</th>
         <th scope="col">آیدی</th>
         <th scope="col">نام کاربری</th>
       </tr>
@@ -16,6 +19,7 @@
     <tbody>
         {% for member in privacy_restricted_members %}
             <tr>
+                <th scope="row">{{forloop.counter}}</th>
                 <td>{{member.member_id}}</td>
                 {% if member.member_username %}
                     <td>@{{member.member_username}}</td>
@@ -26,6 +30,7 @@
         {% endfor %}
     </tbody> 
   </table>
+  <br><br>
 
 {% else %}
 
@@ -33,4 +38,43 @@
 
 <h4 class=" text-center">هیچ کاربری تا به حال با خطا مواجه نشده است</h4>
 {% endif %}
+
+<!--pagination-->
+<div class="row">
+  <div class="col-md-12">
+    {% if privacy_restricted_members.has_other_pages %}
+      <ul class="pagination">
+        {% if privacy_restricted_members.has_previous %}
+          <li class="page-item">
+            <a href="?page={{privacy_restricted_members.previous_page_number}}" class="page-link">&laquo;</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link">&laquo;</a>
+          </li>
+        {% endif %}
+        {% for i in page_number|ranged:privacy_restricted_members.paginator.page_range %}
+          {% if privacy_restricted_members.number == i  %}
+            <li class="page-item active">
+              <a class="page-link">{{i}}</a>
+            </li>
+          {% else %}
+            <li class="page-item">
+              <a href="?page={{i}}" class="page-link ">{{i}}</a>
+            </li>
+          {%endif%}
+        {% endfor %}
+        {% if privacy_restricted_members.has_next %}
+          <li class="page-item">
+            <a href="?page={{privacy_restricted_members.next_page_number}}" class="page-link">&raquo;</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link">&raquo;</a>
+          </li>
+        {% endif %}
+      </ul>
+    {% endif %}
+  </div>
+</div>
 {% endblock content %}

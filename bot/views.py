@@ -3,6 +3,7 @@ from django.core import exceptions
 from django.http import HttpResponse
 from django.contrib import messages
 from django.db.models import Q
+from django.core.paginator import Paginator , PageNotAnInteger , EmptyPage
 
 
 from .models import Source_Groups
@@ -60,27 +61,52 @@ def index(request):
 
 def list_of_members(request):
 
-    if request.method == 'POST':
-        
-        link = request.POST['link']
-        desired_members = Members.objects.filter(member_joined_groups__contains=[link])
+    return render(request , 'bot/list-of-members.html')
+
+
+
+def list_of_members_display(request):
+
+    link = request.GET['link']
+
+    if link:
+        desired_members = Members.objects.filter(member_joined_groups__contains=[link]).order_by('-member_id')
+        paginator = Paginator(desired_members , 100)
+        page_number = request.GET.get('page')
+        paged_desired_members = paginator.get_page(page_number)
+
+        if page_number == None:
+            page_number = "1"
+
         context = {
-            "members":desired_members
+            "members":paged_desired_members,
+            "link":link,
+            "page_number":int(page_number)
         }
-        return render(request , 'bot/list-of-members.html' , context)
-
+        
+        return render(request , 'bot/list-of-members-display.html' , context)
+    
     else:
-        return render(request , 'bot/list-of-members.html')
-
-
+        return render(request , 'bot/list-of-members-display.html')
+    
 
 
 def list_of_privacy_restricted_members(request):
 
-    privacy_restricted_members = Members.objects.filter(adding_permision=False)
+    privacy_restricted_members = Members.objects.filter(adding_permision=False).order_by('-member_id')
+
+    paginator = Paginator(privacy_restricted_members , 100)
+    page_number = request.GET.get('page')
+    paged_privacy_restricted_members = paginator.get_page(page_number)
+
+    if page_number == None:
+        page_number = "1"
+
     context = {
-        "privacy_restricted_members":privacy_restricted_members
+        "privacy_restricted_members":paged_privacy_restricted_members,
+        "page_number":int(page_number)
     }
+    
     return render(request , 'bot/list-of-privacy-restricted-members.html' , context)
 
 

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+{% load ranged %}
+
+{% if members %}
+
+<br><br><br><br>
+
+<table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">#</th>
+        <th scope="col">آیدی</th>
+        <th scope="col">نام کاربری</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for member in members %}
+            <tr>
+                <th scope="row">{{forloop.counter}}</th>
+                <td>{{member.member_id}}</td>
+                {% if member.member_username %}
+                    <td>@{{member.member_username}}</td>
+                {% else %}
+                    <td>Null</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </tbody> 
+  </table>
+  <br><br>
+{% else %}
+<br><br><br><br>
+
+<h4 class=" text-center">...هیچ کاربری هنوز به این گروه اضافه نشده است</h4>
+{% endif %}
+
+<!--pagination-->
+<div class="row">
+    <div class="col-md-12">
+      {% if members.has_other_pages %}
+        <ul class="pagination">
+          {% if members.has_previous %}
+            <li class="page-item">
+              <a href="?page={{members.previous_page_number}}&link={{link}}" class="page-link">&laquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <a class="page-link">&laquo;</a>
+            </li>
+          {% endif %}
+          {% for i in page_number|ranged:members.paginator.page_range %}
+            {% if members.number == i  %}
+              <li class="page-item active">
+                <a class="page-link">{{i}}</a>
+              </li>
+            {% else %}
+              <li class="page-item">
+                <a href="?page={{i}}&link={{link}}" class="page-link ">{{i}}</a>
+              </li>
+            {%endif%}
+          {% endfor %}
+          {% if members.has_next %}
+            <li class="page-item">
+              <a href="?page={{members.next_page_number}}&link={{link}}" class="page-link">&raquo;</a>
+            </li>
+          {% else %}
+            <li class="page-item disabled">
+              <a class="page-link">&raquo;</a>
+            </li>
+          {% endif %}
+        </ul>
+      {% endif %}
+    </div>
+  </div>
+{% endblock content %}

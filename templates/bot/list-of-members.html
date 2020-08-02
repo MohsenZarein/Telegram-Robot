@@ -5,8 +5,7 @@
 <div class=" container " style="width:800px; margin:0 auto;">
     <div class=" container  h-100 row align-items-center justify-content-center">
         <div class=" col">
-            <form action="{% url 'list-of-members' %}" method="POST" class=" center">
-                {% csrf_token %}
+            <form action="{% url 'list-of-members-display' %}" method="GET" class=" center">
                 <div class=" form-group">
                     <label for="link">لینک</label>
                     <input type="text" name="link" class=" form-control" placeholder="https://t.me/XXXXXX" required>
@@ -17,38 +16,4 @@
     </div>
 </div>
 
-{% if members %}
-
-<br><br><br><br><br><br><br><br><br>
-
-<table class="table table-hover">
-    <thead>
-      <tr>
-        <th scope="col">#</th>
-        <th scope="col">آیدی</th>
-        <th scope="col">نام کاربری</th>
-      </tr>
-    </thead>
-    <tbody>
-        {% for member in members %}
-            <tr>
-                <th scope="row">{{forloop.counter}}</th>
-                <td>{{member.member_id}}</td>
-                {% if member.member_username %}
-                    <td>@{{member.member_username}}</td>
-                {% else %}
-                    <td>Null</td>
-                {% endif %}
-            </tr>
-        {% endfor %}
-    </tbody> 
-  </table>
-
-{% else %}
-<br>
-<br>
-<br>
-<br>
-<h4 class=" text-center">...هیچ کاربری هنوز به این گروه اضافه نشده است</h4>
-{% endif %}
 {% endblock content %}
