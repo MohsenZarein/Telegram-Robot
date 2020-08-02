@@ -318,8 +318,8 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 logger.info("User Added ... going to sleep for 900-1000 sec")
                 sleep(random.randrange(900,1000))
             except PeerFloodError:
-                logger.error("Peer flood error ! Too many requests on destination server !")
-                logger.error('Going for 1000 -1100 sec sleep')
+                logger.info("Peer flood error ! Too many requests on destination server !")
+                logger.info('Going for 1000 -1100 sec sleep')
                 sleep(random.randrange(1000,1100))
                 continue
             except FloodWaitError as err:
@@ -327,14 +327,15 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 sleep(err.seconds)
                 continue
             except UserPrivacyRestrictedError:
-                logger.error("This user's privacy does not allow you to do this ... Skipping this user")
-                logger.error("Going for 900-1000 sec sleep")
+                logger.info("This user's privacy does not allow you to do this ... Skipping this user")
+                logger.info("Going for 900-1000 sec sleep")
                 this_member = Members.objects.get(member_id=member.member_id)
                 this_member.adding_permision = False
                 this_member.save()
                 sleep(random.randrange(900,1000))
                 continue
-            except Exception:
+            except Exception as err:
+                logger.error(err)
                 try:
                     user_ready_to_add = InputUser(
                         user_id=int(member.member_id),
@@ -556,9 +557,9 @@ def Scrap(client , group , limit , offset):
         sleep(err.seconds)
         return
     except PeerFloodError as err:
-        logger.error(err)
-        logger.error('Going for 400-500 sec sleep')
-        sleep(random.randrange(400,500))
+        logger.info(err)
+        logger.info('Going for 300-350 sec sleep')
+        sleep(random.randrange(300,350))
         return
     except Exception as err:
         logger.error('Unexpected error while scraping ... Skipping this group')
