@@ -17,8 +17,8 @@ from telethon.tl.types import InputPeerEmpty , InputPeerChannel  ,UserStatusLast
 from telethon.tl.functions.channels import InviteToChannelRequest , JoinChannelRequest , GetParticipantsRequest , GetFullChannelRequest
 from telethon.errors import PeerFloodError , UserPrivacyRestrictedError , ChatAdminRequiredError , FloodWaitError ,ChannelPrivateError
 
-import threading
 from time import sleep
+import threading
 import datetime
 import logging
 import os
@@ -230,7 +230,7 @@ def Add_Members(request):
    
 
         try:
-            workers_list = Workers.objects.all()
+            workers_list = Workers.objects.filter(limited=False)
         except exceptions.ObjectDoesNotExist as err:
             logger.error(err)
             return
@@ -298,10 +298,11 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                                 int(group_entity.access_hash)
         )
 
+        max_retry_for_peerflood = 5
         for member in members_list:
     
             try:
-                logger.info("Adding {} ...".format(int(member.member_id)))
+                logger.info("Adding {0}  {1} ...".format(int(member.member_id),member.member_username))
                 
                 user_ready_to_add = InputUser(
                     user_id=int(member.member_id),
@@ -315,11 +316,19 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 this_member = Members.objects.get(member_id=member.member_id)
                 this_member.member_joined_groups.append(group)
                 this_member.save()
+                max_retry_for_peerflood = 5
                 logger.info("User Added ... going to sleep for 900-1000 sec")
                 sleep(random.randrange(900,1000))
             except PeerFloodError:
                 logger.info("Peer flood error ! Too many requests on destination server !")
-                logger.info('Going for 1000 -1100 sec sleep')
+                logger.info('Going for 1000 - 1100 sec sleep')
+                max_retry_for_peerflood = max_retry_for_peerflood - 1
+                if max_retry_for_peerflood <= 0 :
+                    logger.error("This worker is limited ... Returned")
+                    this_worker = Workers.objects.get(worker_api_hash=worker.worker_api_hash)
+                    this_worker.limited = True
+                    this_worker.save()
+                    return
                 sleep(random.randrange(1000,1100))
                 continue
             except FloodWaitError as err:
@@ -332,7 +341,8 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 this_member = Members.objects.get(member_id=member.member_id)
                 this_member.adding_permision = False
                 this_member.save()
-                sleep(random.randrange(900,1000))
+                max_retry_for_peerflood = 5
+                sleep(random.randrange(800,900))
                 continue
             except Exception as err:
                 logger.error(err)
@@ -355,7 +365,6 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 except Exception as err:
                     logger.error(err)
                     logger.error("Going for 800-900 sec sleep")
-                    print('inja......')
                     sleep(random.randrange(800,900))
                     continue
 
@@ -387,7 +396,7 @@ def Scraping():
     logger.info("START SCRAPING ...")
     try:
         try:
-            workers_list = Workers.objects.all()
+            workers_list = Workers.objects.filter(limited=False)
         except exceptions.ObjectDoesNotExist as err:
             logger.error(err)
             return
