@@ -11,5 +11,6 @@ urlpatterns = [
     path('bot/list-of-members' ,views.list_of_members , name='list-of-members'),
     path('bot/list-of-privacy-restricted-mebers', views.list_of_privacy_restricted_members , name='list-of-privacy-restricted-mebers'),
     path('bot/list-of-members-display' , views.list_of_members_display , name='list-of-members-display'),
+    path('bot/authenticate-worker' , views.Authenticate_Worker , name='authenticate-worker'),
     
 ]

@@ -15,7 +15,7 @@ from telethon import TelegramClient
 from telethon.tl.functions.messages import GetDialogsRequest , CheckChatInviteRequest , ImportChatInviteRequest , AddChatUserRequest 
 from telethon.tl.types import InputPeerEmpty , InputPeerChannel  ,UserStatusLastMonth  , ChannelParticipantsSearch , InputUser,InputPeerChat
 from telethon.tl.functions.channels import InviteToChannelRequest , JoinChannelRequest , GetParticipantsRequest , GetFullChannelRequest
-from telethon.errors import PeerFloodError , UserPrivacyRestrictedError , ChatAdminRequiredError , FloodWaitError ,ChannelPrivateError
+from telethon.errors import PeerFloodError , UserPrivacyRestrictedError , ChatAdminRequiredError , FloodWaitError ,ChannelPrivateError 
 
 from time import sleep
 import threading
@@ -152,24 +152,19 @@ def Add_Target_Group(request):
 
 
 
-
+CLIENT = None
 def Add_Worker(request):
 
     if request.method == 'POST':
+
+        global CLIENT
 
         worker_api_id = request.POST['api_id']
         worker_api_hash = request.POST['api_hash']
         worker_phone = request.POST['phone']
 
         if not Workers.objects.filter(worker_api_hash=worker_api_hash).exists():
-
-            worker_acc = Workers.objects.create(
-                                                worker_api_id=worker_api_id,
-                                                worker_api_hash=worker_api_hash,
-                                                worker_phone=worker_phone
-            )
             
-            # Register Worker Account by entering code into terminal
             try:
                 client = TelegramClient(
                                         worker_phone,
@@ -179,19 +174,22 @@ def Add_Worker(request):
                 client.connect()
                 if not client.is_user_authorized():
                     client.send_code_request(worker_phone)
-                    code = input("Enter the code for {0}: ".format(worker_phone))
-                    client.sign_in(
-                                    worker_phone,
-                                    code     
-                    )
-                logger.info('client authenticated')
-                sleep(3)
-                client.disconnect()
-                worker_acc.save()
-                messages.success(request,'اکانت ورکر با موفقیت ذخیره و ثبت شد')
-                return redirect('add-worker')
+                    
+
+                    
+                context = {
+                    "phone":worker_phone,
+                    "api_id":worker_api_id,
+                    "api_hash":worker_api_hash
+                }
+
+                CLIENT = client
+
+                messages.success(request,'اکانت ذخیره شد , کد ارسال را شده را برای ثبت وارد کنید')
+                return render(request , 'bot/authenticate-worker.html' , context)
             except Exception as err:
-                messages.error(request , 'ثبت اکانت با خطا مواجه شد , دوباره تلاش کنید')
+                logger.error(err)
+                messages.error(request , 'خطا در ذخیره اکانت, دوباره تلاش کنید')
                 return redirect('add-worker')
                 
 
@@ -202,6 +200,61 @@ def Add_Worker(request):
     else:
         return render(request , 'bot/add-worker.html')
         
+
+
+
+def Authenticate_Worker(request):
+
+    if request.method == 'POST':
+
+        global CLIENT
+
+        try:
+            code = request.POST['code']
+            phone  = request.POST['phone']
+            api_id = request.POST['api_id']
+            api_hash = request.POST['api_hash']
+        except:
+            messages.error(request , 'خطا در ثبت اکانت , دوباره تلاش کنید')
+            return redirect('add-worker')
+
+
+        try:
+            
+            CLIENT.sign_in(
+                            phone,
+                            code
+            )
+
+            worker_acc = Workers.objects.create(
+                                                worker_api_id=api_id,
+                                                worker_api_hash=api_hash,
+                                                worker_phone=phone
+            )
+            worker_acc.save()
+            
+            CLIENT.disconnect()
+            CLIENT = None
+
+            messages.success(request , 'اکانت ثبت شد')
+            return redirect('index')
+        
+        except Exception as err:
+            logger.error(err)
+            messages.error(request , 'مشگلی در ثبت اکانت وجود دارد , یک بار دیگر تلاش کنید')
+            context = {
+                    "phone":phone,
+                    "api_id":api_id,
+                    "api_hash":api_hash
+                }
+            return render(request , 'bot/authenticate-worker.html' , context) 
+    
+    else:
+        
+        return render(request , 'bot/authenticate-worker.html')
+
+
+
 
 
 

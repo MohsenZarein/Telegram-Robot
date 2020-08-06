@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class=" container " style="width:800px; margin:0 auto;">
+    <div class=" container  h-100 row align-items-center justify-content-center">
+        <div class=" col">
+            <form action="{% url 'authenticate-worker' %}" method="POST" class=" center">
+                {% csrf_token %}
+                <div class=" form-group">
+                    <label for="code">کد ارسال شده</label>
+                    <input type="text" name="code" class=" form-control" required>
+                </div>
+                {% if phone %}
+                    <input type="hidden"  name="phone"  value="{{phone}}">
+                {% else %}
+                    <input type="hidden"  name="phone"  value="">
+                {% endif %}
+                {% if api_id %}
+                    <input type="hidden"  name="api_id"  value="{{api_id}}">
+                {% else %}
+                    <input type="hidden"  name="api_id"  value="">
+                {% endif %}
+                {% if api_hash %}
+                    <input type="hidden"  name="api_hash"  value="{{api_hash}}">
+                {% else %}
+                    <input type="hidden"  name="api_hash"  value="">
+                {% endif %}
+                <input type="submit" value="ثبت کد" class=" btn btn-primary btn-block">
+            </form>
+        </div>
+    </div>
+</div>
+<br>
+<br>
+<br>
+{% include 'partials/messages.html' %}
+{% endblock content %}
