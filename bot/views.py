@@ -501,10 +501,12 @@ def Scraping():
         
             data = clients[0][0](GetFullChannelRequest(group.link))
             limit = int(data.full_chat.participants_count / len(clients))
+            print('limit :',limit)
             
             workers_threads = []
             for i in range(len(clients)):
-                offset = (i * limit) + 1
+                offset = (i * limit)
+                print('offset:',offset)
                 workers_threads.append(threading.Thread(target=Scrap , args=(clients[i],group,limit,offset)))
 
             for worker in workers_threads:
@@ -555,9 +557,9 @@ def Scrap(client , group , limit , offset):
     try:
         g_entity = client[0].get_entity(group.link)
         sleep(random.randrange(80,110))
-        client[0](JoinChannelRequest(g_entity))
-        logger.info('Joined source channel')
-        sleep(random.randrange(80,110))
+        #client[0](JoinChannelRequest(g_entity))
+        #logger.info('Joined source channel')
+        #sleep(random.randrange(80,110))
     except Exception:
         try:
             client[0](ImportChatInviteRequest(group.link.split('/')[-1]))
