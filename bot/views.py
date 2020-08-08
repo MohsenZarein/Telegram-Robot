@@ -673,8 +673,9 @@ def Scraping():
         
         for group in groups:
         
-            data = clients[0][0](GetFullChannelRequest(group.link))
-            limit = int(data.full_chat.participants_count / len(clients))
+            #data = clients[0][0](GetFullChannelRequest(group.link))
+            #limit = int(data.full_chat.participants_count / len(clients))
+            limit = 500
             print('limit :',limit)
             
             workers_threads = []
@@ -751,7 +752,7 @@ def Scrap(client , group , limit , offset):
 
     try:
                 
-        max_retry = 0
+        
         some_members = []
         while len(some_members) < limit:
             participants = client[0](GetParticipantsRequest(
@@ -759,9 +760,7 @@ def Scrap(client , group , limit , offset):
                 hash=0
             ))
             if not participants.users:
-                max_retry = max_retry + 1
-                if max_retry = 7:
-                    break
+                break
             some_members.extend(participants.users)
             offset += len(participants.users)
 
