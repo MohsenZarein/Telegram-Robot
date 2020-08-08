@@ -447,7 +447,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
 
 
 
-
+"""
 def Scraping():
     logger.info("START SCRAPING ...")
     try:
@@ -609,16 +609,16 @@ def Scraping():
         logger.error('EXITED')
         client.disconnect()
         return
-
-
-
-
-
-
-
-
-
 """
+
+
+
+
+
+
+
+
+
 def Scraping():
     logger.info("START SCRAPING ...")
     try:
@@ -679,7 +679,7 @@ def Scraping():
             
             workers_threads = []
             for i in range(len(clients)):
-                offset = (i * limit)
+                offset = i * limit
                 print('offset:',offset)
                 workers_threads.append(threading.Thread(target=Scrap , args=(clients[i],group,limit,offset)))
 
@@ -751,7 +751,7 @@ def Scrap(client , group , limit , offset):
 
     try:
                 
-    
+        max_retry = 0
         some_members = []
         while len(some_members) < limit:
             participants = client[0](GetParticipantsRequest(
@@ -759,7 +759,9 @@ def Scrap(client , group , limit , offset):
                 hash=0
             ))
             if not participants.users:
-                break
+                max_retry = max_retry + 1
+                if max_retry = 7:
+                    break
             some_members.extend(participants.users)
             offset += len(participants.users)
 
@@ -804,4 +806,3 @@ def Scrap(client , group , limit , offset):
         logger.error(err)
         return
 
-"""
