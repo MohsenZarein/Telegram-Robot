@@ -15,6 +15,7 @@
             <th scope="col">شماره تلفن</th>
             <th scope="col">ای پی ای آیدی</th>
             <th scope="col">ای پی ای هش</th>
+            <th scope="col"> وضعیت محدودیت </th>
         </tr>
         </thead>
         <tbody>
@@ -24,6 +25,11 @@
                     <td>{{worker.worker_phone}}</td>
                     <td>{{worker.worker_api_id}}</td>
                     <td>{{worker.worker_api_hash}}</td>
+                    {% if worker.limited == True %}
+                        <td class=" font-italic font-weight-bold"> محدود شده</td>
+                    {% else  %}
+                        <td class=" font-italic font-weight-bold"> بدون محدودیت</td>
+                    {% endif %}
                 </tr>
             {% endfor %}
         </tbody> 
