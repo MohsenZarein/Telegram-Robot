@@ -295,7 +295,7 @@ def Add_Members(request):
         for worker in workers_list:
             members_list =  Members.objects.filter(Q(scraped_by=worker) & ~Q(member_joined_groups__contains=[group]) & Q(adding_permision=True))[:rate]
             threading.Thread(target=Add_Members_To_Target_Groups , args=(worker,group,members_list)).start()
-            sleep(1)
+            sleep(2)
 
         messages.success(request , 'اضافه کردن کاربران به گروه هدف آغاز شد , میتوانید لاگ های ربات را در کنسول مشاهده کنید')
         return redirect('add-members')
@@ -499,17 +499,17 @@ def Scraping():
         
         for group in groups:
         
-            data = clients[-1][0](GetFullChannelRequest(group.link))
+            data = clients[0][0](GetFullChannelRequest(group.link))
             limit = int(data.full_chat.participants_count / len(clients))
             
             workers_threads = []
             for i in range(len(clients)):
-                offset = (i * limit) + 5
+                offset = (i * limit) + 1
                 workers_threads.append(threading.Thread(target=Scrap , args=(clients[i],group,limit,offset)))
 
             for worker in workers_threads:
                 worker.start()
-                sleep(1)
+                sleep(2)
 
             for worker in workers_threads:
                 worker.join()          
