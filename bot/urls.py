@@ -12,5 +12,8 @@ urlpatterns = [
     path('bot/list-of-privacy-restricted-mebers', views.list_of_privacy_restricted_members , name='list-of-privacy-restricted-mebers'),
     path('bot/list-of-members-display' , views.list_of_members_display , name='list-of-members-display'),
     path('bot/authenticate-worker' , views.Authenticate_Worker , name='authenticate-worker'),
+    path('bot/num-of-members-scrp-by-each-wrk' , views.number_of_members_scraped_by_each_worker , name='number-of-members-scraped-by-each-worker'),
+    path('bot/num-of-members-scrp-by-each-wrk-dis',views.number_of_members_scraped_by_each_worker_display,name='number-of-members-scraped-by-each-worker-display'),
+
     
 ]

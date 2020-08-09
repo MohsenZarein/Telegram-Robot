@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+<div class=" container " style="width:800px; margin:0 auto;">
+    <div class=" container  h-100 row align-items-center justify-content-center">
+        <div class=" col">
+            <form action="{% url 'number-of-members-scraped-by-each-worker-display' %}" method="GET" class=" center">
+                <div class=" form-group">
+                    <label for="link">لینک</label>
+                    <input type="text" name="link" class=" form-control" placeholder="https://t.me/XXXXXX" required>
+                </div>
+                <input type="submit" value="تایید" class=" btn btn-primary btn-block">
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

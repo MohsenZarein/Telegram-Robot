@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br><br><br>
+{% include 'partials/messages.html' %}
+<br><br><br><br><br><br>
+
+{% if data %}
+    <br><br><br>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">شماره تلفن</th>
+            <th scope="col">ای پی ای آیدی</th>
+            <th scope="col">ای پی ای هش</th>
+            <th scope="col"> تعداد کاربر های استخراج شده </th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for worker,num_of_members in data.items %}
+                <tr>
+                    <th scope="row">{{forloop.counter}}</th>
+                    <td>{{worker.worker_phone}}</td>
+                    <td>{{worker.worker_api_id}}</td>
+                    <td>{{worker.worker_api_hash}}</td>
+                    <td>{{num_of_members}}</td>
+                    
+                </tr>
+            {% endfor %}
+        </tbody> 
+    </table>
+{% else %}
+    <h4 class=" text-center">هیچ داده ای موجود نیست</h4>
+{% endif %}
+{% endblock content %}

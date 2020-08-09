@@ -67,10 +67,9 @@ def list_of_members(request):
 
 def list_of_members_display(request):
 
-    link = request.GET['link']
-
-    if link:
-        desired_members = Members.objects.filter(member_joined_groups__contains=[link]).order_by('-member_id')
+    try:
+        link = request.GET['link']
+        desired_members = Members.objects.filter(member_joined_groups__contains=[link]).order_by('member_id')
         paginator = Paginator(desired_members , 100)
         page_number = request.GET.get('page')
         paged_desired_members = paginator.get_page(page_number)
@@ -86,7 +85,8 @@ def list_of_members_display(request):
         
         return render(request , 'bot/list-of-members-display.html' , context)
     
-    else:
+    except Exception as err:
+        logger.error(err)
         return render(request , 'bot/list-of-members-display.html')
     
 
@@ -109,6 +109,36 @@ def list_of_privacy_restricted_members(request):
     
     return render(request , 'bot/list-of-privacy-restricted-members.html' , context)
 
+
+
+
+
+def number_of_members_scraped_by_each_worker(request):
+
+    return render(request , 'bot/number-of-members-scraped-by-each-worker.html')
+
+
+
+
+def number_of_members_scraped_by_each_worker_display(request):
+    
+    try:
+        link = request.GET['link']
+        workers = Workers.objects.all()
+        data = {}
+        for worker in workers:
+            num_of_members = Members.objects.filter(member_source_group=link , scraped_by=worker).count()
+            data[worker] = num_of_members
+        
+        context = {
+            "data":data
+        }
+
+        return render(request,'bot/number-of-members-scraped-by-each-worker-display.html' , context)
+    
+    except Exception as err:
+        logger.error(err)
+        return render(request , 'bot/number-of-members-scraped-by-each-worker-display.html')
 
 
 
@@ -351,7 +381,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                                 int(group_entity.access_hash)
         )
 
-        max_retry_for_peerflood = 5
+        max_retry_for_peerflood = 7
         for member in members_list:
     
             try:
@@ -445,180 +475,6 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
 
 
 
-
-
-"""
-def Scraping():
-    logger.info("START SCRAPING ...")
-    try:
-        try:
-            workers_list = Workers.objects.all()
-        except exceptions.ObjectDoesNotExist as err:
-            logger.error(err)
-            return
-        except Exception as err:
-            logger.error(err)
-            return
-
-        clients = []
-        for worker in workers_list:
-            client = TelegramClient(
-                                    worker.worker_phone,
-                                    worker.worker_api_id,
-                                    worker.worker_api_hash
-            )
-            client.connect()
-            if not client.is_user_authorized():
-                logger.error('worker with {0} api_id is not signed in , skiping this worker'.format(worker.worker_api_id))
-                continue
-
-            worker_obj = [client,worker]
-            clients.append(worker_obj)
-            logger.info('a client connected...')
-            sleep(5)
-        
-        if not clients:
-            logger.error('None of clients connected ! try again...')
-            return
-        
-        logger.info('some clients connected successfuly ! ...')
-        sleep(10)
-
-        try:
-            groups = Source_Groups.objects.all()
-        except exceptions.ObjectDoesNotExist:
-            logger.error('There is not any source groups in database !')
-            for i in range(len(clients)):
-                clients[i][0].disconnect()
-                sleep(1)
-            return
-        except Exception as err:
-            logger.error(err)
-            for i in range(len(clients)):
-                clients[i][0].disconnect()
-                sleep(1)
-            return
-
-        
-        for group in groups:
-            offset = 0
-            for i in range(len(clients)):
-                try:
-                    g_entity = clients[i][0].get_entity(group.link)
-                    sleep(random.randrange(60,80))
-                    #clients[i][0](JoinChannelRequest(g_entity))
-                    #logger.info('Joined source channel')
-                    #sleep(random.randrange(80,100))
-                except Exception:
-                    try:
-                        clients[i][0](ImportChatInviteRequest(group.link.split('/')[-1]))
-                        logger.info('Joined source chat')
-                        sleep(random.randrange(80,100))
-                        g_entity = clients[i][0].get_entity(group.link)
-                        sleep(random.randrange(80,100))
-
-                    except Exception as err:
-                        logger.error(err)
-                        sleep(random.randrange(80,100))
-                        continue
-                
-                logger.info("Getting members from {0} ...".format(g_entity.title))
-
-                try:
-                            
-                    data = clients[i][0](GetFullChannelRequest(group.link))
-                    limit = int(data.full_chat.participants_count / len(clients))
-              
-                    some_members = []
-                    while len(some_members) < limit:
-                        participants = clients[i][0](GetParticipantsRequest(
-                            g_entity, ChannelParticipantsSearch(''), offset, limit,
-                            hash=0
-                        ))
-                        if not participants.users:
-                            break
-                        some_members.extend(participants.users)
-                        offset += len(participants.users)
-
-                    logger.info('Members scraped successfully !')
-                    logger.info('Now saving members into database ...')
-                    for member in some_members:
-                        if not Members.objects.filter(member_id=member.id).exists():
-                        
-                            if member.username:
-                                username = member.username
-                            else:
-                                username = ""
-                            a_member = Members.objects.create(
-                                                                member_id=member.id,
-                                                                member_access_hash=member.access_hash,
-                                                                member_username=username,
-                                                                scraped_by=clients[i][1]
-                            )
-                            a_member.save()
-
-
-                    logger.info('saved successfuly!')
-                    #logger.info('Going to sleep for 120 sec')
-                    #sleep(120)
-                    
-                    
-                except ChatAdminRequiredError:
-                    logger.error('Chat admin privileges does not allow you to scrape members ... Skipping this group')
-                    logger.error('Going for 800-900 sec sleep')
-                    sleep(random.randrange(800,900))
-                    break
-                except FloodWaitError as err:
-                    logger.error('Something wrong with the server , Have to sleep ' + err.seconds + ' seconds')
-                    sleep(err.seconds)
-                    continue
-                except PeerFloodError as err:
-                    logger.error(err)
-                    logger.error('Going for 900-1000 sec sleep')
-                    sleep(random.randrange(900,1000))
-                    continue
-                except Exception as err:
-                    logger.error('Unexpected error while scraping ... Skipping this group')
-                    logger.error(err)
-                    logger.error('Going for 800-900 sec sleep')
-                    sleep(random.randrange(800,900))
-                    continue
-
-
-
-            logger.info('1 group complted ....')
-
-        
-        logger.info('Action completed !')
-        Source_Groups.objects.all().delete()
-
-        for i in range(len(clients)):
-            clients[i][0].disconnect()
-            sleep(1)
-
-    except ConnectionError as err:
-        logger.error(err)
-        logger.info('----Use a proxy or VPN-----')
-        return
-    except KeyboardInterrupt:
-        client.disconnect()
-        logger.error('EXITED')
-        return
-    except Exception as err:
-        logger.error(err)
-        logger.error('EXITED')
-        client.disconnect()
-        return
-"""
-
-
-
-
-
-
-
-
-
 def Scraping():
     logger.info("START SCRAPING ...")
     try:
@@ -673,15 +529,17 @@ def Scraping():
         
         for group in groups:
         
-            #data = clients[0][0](GetFullChannelRequest(group.link))
-            #limit = int(data.full_chat.participants_count / len(clients))
-            limit = 500
+            data = clients[0][0](GetFullChannelRequest(group.link))
+            limit = int(data.full_chat.participants_count / len(clients))
+
+            while (limit * len(clients)) > 10000:
+                limit = limit - 10
+
             print('limit :',limit)
             
             workers_threads = []
             for i in range(len(clients)):
                 offset = i * limit
-                print('offset:',offset)
                 workers_threads.append(threading.Thread(target=Scrap , args=(clients[i],group,limit,offset)))
 
             for worker in workers_threads:
@@ -732,9 +590,9 @@ def Scrap(client , group , limit , offset):
     try:
         g_entity = client[0].get_entity(group.link)
         sleep(random.randrange(80,110))
-        #client[0](JoinChannelRequest(g_entity))
-        #logger.info('Joined source channel')
-        #sleep(random.randrange(80,110))
+        client[0](JoinChannelRequest(g_entity))
+        logger.info('Joined source channel')
+        sleep(random.randrange(80,110))
     except Exception:
         try:
             client[0](ImportChatInviteRequest(group.link.split('/')[-1]))
@@ -778,6 +636,7 @@ def Scrap(client , group , limit , offset):
                                                     member_id=member.id,
                                                     member_access_hash=member.access_hash,
                                                     member_username=username,
+                                                    member_source_group=group.link,
                                                     scraped_by=client[1]
                 )
                 a_member.save()
