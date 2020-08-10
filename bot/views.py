@@ -544,24 +544,28 @@ def Scraping():
 
             print('limit :',limit)
             
-            workers_threads = []
+            #workers_threads = []
             for i in range(len(clients)):
 
-                workers_threads.append(threading.Thread(target=Scrap , args=(clients[i],group)))
+                th = threading.Thread(target=Scrap , args=(clients[i],group))
+                th.start()
+                th.join()
 
 
-            for worker in workers_threads:
-                worker.start()
-                sleep(1)
+                """
+                for worker in workers_threads:
+                    worker.start()
+                    sleep(1)
+                
 
+                for worker in workers_threads:
+                    worker.join()
+                """
 
-            for worker in workers_threads:
-                worker.join()
+                logger.info('Now saving members of {0} into database ...'.format(group.link))
             
-            logger.info('Now saving members of {0} into database ...'.format(group.link))
-            for i in range(len(FULL_MEMBER_LIST)):
                 counter = 0
-                for member in FULL_MEMBER_LIST[i][2]:
+                for member in FULL_MEMBER_LIST[2]:
                     if counter < limit:
                         if not Members.objects.filter(member_id=member.id).exists():
                             if member.username:
@@ -572,8 +576,8 @@ def Scraping():
                                                             member_id=member.id,
                                                             member_access_hash=member.access_hash,
                                                             member_username=username,
-                                                            member_source_group=FULL_MEMBER_LIST[i][1],
-                                                            scraped_by=FULL_MEMBER_LIST[i][0]
+                                                            member_source_group=FULL_MEMBER_LIST[1],
+                                                            scraped_by=FULL_MEMBER_LIST[0]
                             )
                             a_member.save()
                             counter = counter + 1
@@ -585,8 +589,9 @@ def Scraping():
                 if counter < limit + 1:
                     break 
 
-                    
-            FULL_MEMBER_LIST = []
+                FULL_MEMBER_LIST = []
+                sleep(15)
+
             logger.info('saved successfuly!')
             logger.info('Going to sleep for 120 sec')
             sleep(120)
@@ -649,11 +654,13 @@ def Scrap(client , group):
     
     logger.info("Getting members from {0} ...".format(g_entity.title))
 
-    try:
-                
+    try:        
         
         all_participants = client[0].get_participants(g_entity, aggressive=True)
-        FULL_MEMBER_LIST.append([client[1] , group.link , all_participants])
+        #FULL_MEMBER_LIST.append([client[1] , group.link , all_participants])
+        FULL_MEMBER_LIST.append(client[1])
+        FULL_MEMBER_LIST.append(group.link)
+        FULL_MEMBER_LIST.append(all_participants)
 
         print(len(all_participants))
         logger.info('Members scraped successfully !')
