@@ -473,11 +473,14 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
 
 
 
-
-
+FULL_MEMBER_LIST = []
 def Scraping():
+
+    global FULL_MEMBER_LIST
+
     logger.info("START SCRAPING ...")
     try:
+
         try:
             workers_list = Workers.objects.filter(limited=False)
         except exceptions.ObjectDoesNotExist as err:
@@ -489,20 +492,24 @@ def Scraping():
 
         clients = []
         for worker in workers_list:
-            client = TelegramClient(
-                                    worker.worker_phone,
-                                    worker.worker_api_id,
-                                    worker.worker_api_hash
-            )
-            client.connect()
-            if not client.is_user_authorized():
-                logger.error('worker with {0} api_id is not signed in , skiping this worker'.format(worker.worker_api_id))
+            try:
+                client = TelegramClient(
+                                        worker.worker_phone,
+                                        worker.worker_api_id,
+                                        worker.worker_api_hash
+                )
+                client.connect()
+                if not client.is_user_authorized():
+                    logger.error('worker with {0} api_id is not signed in , skiping this worker'.format(worker.worker_api_id))
+                    continue
+                    
+                worker_and_client_obj = [client,worker]
+                clients.append(worker_and_client_obj)
+                logger.info('a client connected...')
+                sleep(5)
+            except Exception as err:
+                logger.error(err)
                 continue
-
-            worker_and_client_obj = [client,worker]
-            clients.append(worker_and_client_obj)
-            logger.info('a client connected...')
-            sleep(5)
         
         if not clients:
             logger.error('None of clients connected ! try again...')
@@ -511,6 +518,7 @@ def Scraping():
         logger.info('some clients connected successfuly ! ...')
         sleep(10)
 
+        
         try:
             groups = Source_Groups.objects.all()
         except exceptions.ObjectDoesNotExist:
@@ -525,32 +533,63 @@ def Scraping():
                 clients[i][0].disconnect()
                 sleep(1)
             return
-
         
         for group in groups:
         
             data = clients[0][0](GetFullChannelRequest(group.link))
             limit = int(data.full_chat.participants_count / len(clients))
-
-            while (limit * len(clients)) > 10000:
-                limit = limit - 10
+            
+            if limit > 180:
+                limit = 180
 
             print('limit :',limit)
             
             workers_threads = []
             for i in range(len(clients)):
-                offset = i * limit
-                workers_threads.append(threading.Thread(target=Scrap , args=(clients[i],group,limit,offset)))
+
+                workers_threads.append(threading.Thread(target=Scrap , args=(clients[i],group)))
+
 
             for worker in workers_threads:
                 worker.start()
-                sleep(2)
+                sleep(1)
+
 
             for worker in workers_threads:
-                worker.join()          
+                worker.join()
+            
+            logger.info('Now saving members of {0} into database ...'.format(group.link))
+            for i in range(len(FULL_MEMBER_LIST)):
+                counter = 0
+                for member in FULL_MEMBER_LIST[i][2]:
+                    if counter < limit:
+                        if not Members.objects.filter(member_id=member.id).exists():
+                            if member.username:
+                                username = member.username
+                            else:
+                                username = ""
+                            a_member = Members.objects.create(
+                                                            member_id=member.id,
+                                                            member_access_hash=member.access_hash,
+                                                            member_username=username,
+                                                            member_source_group=FULL_MEMBER_LIST[i][1],
+                                                            scraped_by=FULL_MEMBER_LIST[i][0]
+                            )
+                            a_member.save()
+                            counter = counter + 1
+                        
 
+                    else: 
+                        break
+                
+                if counter < limit + 1:
+                    break 
 
-
+                    
+            FULL_MEMBER_LIST = []
+            logger.info('saved successfuly!')
+            logger.info('Going to sleep for 120 sec')
+            sleep(120)
             logger.info('1 group complted ....')
 
         
@@ -584,7 +623,9 @@ def Scraping():
 
 
 
-def Scrap(client , group , limit , offset):
+def Scrap(client , group):
+
+    global FULL_MEMBER_LIST
 
     logger.info('Getting entity of {0}'.format(group.link))
     try:
@@ -611,42 +652,12 @@ def Scrap(client , group , limit , offset):
     try:
                 
         
-        some_members = []
-        while len(some_members) < limit:
-            participants = client[0](GetParticipantsRequest(
-                g_entity, ChannelParticipantsSearch(''), offset, limit,
-                hash=0
-            ))
-            if not participants.users:
-                break
-            some_members.extend(participants.users)
-            offset += len(participants.users)
+        all_participants = client[0].get_participants(g_entity, aggressive=True)
+        FULL_MEMBER_LIST.append([client[1] , group.link , all_participants])
 
+        print(len(all_participants))
         logger.info('Members scraped successfully !')
-        logger.info('Now saving members into database ...')
-        sleep(random.randrange(1,5))
-        for member in some_members:
-            if not Members.objects.filter(member_id=member.id).exists():
-            
-                if member.username:
-                    username = member.username
-                else:
-                    username = ""
-                a_member = Members.objects.create(
-                                                    member_id=member.id,
-                                                    member_access_hash=member.access_hash,
-                                                    member_username=username,
-                                                    member_source_group=group.link,
-                                                    scraped_by=client[1]
-                )
-                a_member.save()
 
-
-        logger.info('saved successfuly!')
-        logger.info('Going to sleep for 120 sec')
-        sleep(120)
-        
-        
     except ChatAdminRequiredError:
         logger.error('Chat admin privileges does not allow you to scrape members ... Skipping this group')
         return
