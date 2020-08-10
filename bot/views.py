@@ -586,7 +586,7 @@ def Scraping():
                     else: 
                         break
                 
-                if counter < limit + 1:
+                if counter < limit :
                     break 
 
                 FULL_MEMBER_LIST = []
