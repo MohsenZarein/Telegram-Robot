@@ -4,10 +4,10 @@ from telethon.tl.types import InputPeerEmpty , InputPeerChannel  , InputUser , I
 from telethon.tl.functions.channels import InviteToChannelRequest , JoinChannelRequest
 from telethon.errors import PeerFloodError , UserPrivacyRestrictedError , ChatAdminRequiredError , FloodWaitError
 
-from .models import Source_Groups
-from .models import Target_Groups
-from .models import Workers
-from .models import Members
+from bot.models import Source_Groups
+from bot.models import Target_Groups
+from bot.models import Workers
+from bot.models import Members
 
 from time import sleep
 import threading
