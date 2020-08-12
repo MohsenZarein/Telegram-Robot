@@ -23,8 +23,10 @@ import threading
 import datetime
 import logging
 
-from .Scraper import Scraping
-from .Adder import Add_Members_To_Target_Groups
+
+from .Scripts.Scraper import Scraping
+from .Scripts.Adder import Add_Members_To_Target_Groups
+
 
 
 

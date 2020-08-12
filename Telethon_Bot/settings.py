@@ -80,7 +80,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'telethonbotdb',
-        'USER': 'telegramdbadmin',
+        'USER': 'postgres',
         'PASSWORD': '0260psql',
         'HOST': 'localhost'
     }
