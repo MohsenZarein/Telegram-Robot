@@ -399,7 +399,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 this_member = Members.objects.get(member_id=member.member_id)
                 this_member.member_joined_groups.append(group)
                 this_member.save()
-                max_retry_for_peerflood = 5
+                max_retry_for_peerflood = 7
                 logger.info("User Added ... going to sleep for 900-1000 sec")
                 sleep(random.randrange(900,1000))
             except PeerFloodError:
@@ -424,7 +424,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 this_member = Members.objects.get(member_id=member.member_id)
                 this_member.adding_permision = False
                 this_member.save()
-                max_retry_for_peerflood = 5
+                max_retry_for_peerflood = 7
                 sleep(random.randrange(800,900))
                 continue
             except Exception as err:
