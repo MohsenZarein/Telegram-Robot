@@ -309,11 +309,10 @@ def Add_Members(request):
 
     if request.method == 'POST':
 
-        group = request.POST['target_group_link']
-        rate = int(request.POST['rate'])
-        rate = rate + 5
-   
-
+        target_group = request.POST['target_group_link']
+        source_group = request.POST['source_group_link']
+        rate = int(request.POST['rate']) + 5
+        
         try:
             workers_list = Workers.objects.filter(limited=False)
         except exceptions.ObjectDoesNotExist as err:
@@ -325,8 +324,22 @@ def Add_Members(request):
 
 
         for worker in workers_list:
-            members_list =  Members.objects.filter(Q(scraped_by=worker) & ~Q(member_joined_groups__contains=[group]) & Q(adding_permision=True))[:rate]
-            threading.Thread(target=Add_Members_To_Target_Groups , args=(worker,group,members_list)).start()
+            if source_group:
+                members_list =  Members.objects.filter(
+                                                    Q(scraped_by=worker) & 
+                                                    ~Q(member_joined_groups__contains=[target_group]) & 
+                                                    Q(adding_permision=True) & 
+                                                    Q(member_source_group=source_group)
+                    )[:rate]
+            else:
+                members_list =  Members.objects.filter(
+                                                    Q(scraped_by=worker) & 
+                                                    ~Q(member_joined_groups__contains=[target_group]) & 
+                                                    Q(adding_permision=True)
+                    )[:rate]
+
+            
+            threading.Thread(target=Add_Members_To_Target_Groups , args=(worker,target_group,members_list)).start()
             sleep(2)
 
         messages.success(request , 'اضافه کردن کاربران به گروه هدف آغاز شد , میتوانید لاگ های ربات را در کنسول مشاهده کنید')
