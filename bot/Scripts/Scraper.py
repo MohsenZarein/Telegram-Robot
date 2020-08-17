@@ -120,9 +120,15 @@ def Scraping():
             return
         
         for group in groups:
-        
-            data = clients[0][0](GetFullChannelRequest(group.link))
-            limit = int(data.full_chat.participants_count / len(clients))
+            
+            try:
+                data = clients[0][0](GetFullChannelRequest(group.link))
+                limit = int(data.full_chat.participants_count / len(clients))
+            except:
+                clients[0][0](ImportChatInviteRequest(group.link.split('/')[-1]))
+                sleep(7)
+                data = clients[0][0](GetFullChannelRequest(group.link))
+                limit = int(data.full_chat.participants_count / len(clients))
             
             if limit > 180:
                 limit = 180
