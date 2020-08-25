@@ -1,7 +1,7 @@
 from telethon import TelegramClient
 from telethon.tl.functions.messages import ImportChatInviteRequest , AddChatUserRequest 
 from telethon.tl.types import InputPeerEmpty , InputPeerChannel  , InputUser , InputPeerChat
-from telethon.tl.functions.channels import InviteToChannelRequest , JoinChannelRequest
+from telethon.tl.functions.channels import InviteToChannelRequest , JoinChannelRequest , LeaveChannelRequest
 from telethon.errors import PeerFloodError , UserPrivacyRestrictedError , ChatAdminRequiredError , FloodWaitError
 
 from bot.models import Source_Groups
@@ -212,6 +212,12 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
         logger.info('Action completed')
         worker.active = False
         worker.save()
+        
+        try:
+            client(LeaveChannelRequest(group_entity))
+        except Exception as err:
+            logger.error(err)
+
         client.disconnect()
     
 

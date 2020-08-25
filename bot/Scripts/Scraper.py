@@ -1,7 +1,7 @@
 from telethon import TelegramClient
-from telethon.tl.functions.messages import CheckChatInviteRequest , ImportChatInviteRequest , AddChatUserRequest 
+from telethon.tl.functions.messages import CheckChatInviteRequest , ImportChatInviteRequest , AddChatUserRequest
 from telethon.tl.types import UserStatusLastMonth  , ChannelParticipantsSearch 
-from telethon.tl.functions.channels import JoinChannelRequest , GetParticipantsRequest , GetFullChannelRequest
+from telethon.tl.functions.channels import JoinChannelRequest , LeaveChannelRequest , GetParticipantsRequest , GetFullChannelRequest
 from telethon.errors import PeerFloodError , ChatAdminRequiredError , FloodWaitError ,ChannelPrivateError 
 
 from django.core import exceptions
@@ -275,6 +275,10 @@ def Scrap(client , group):
 
         print(len(all_participants))
         logger.info('Members scraped successfully !')
+        try:
+            client[0](LeaveChannelRequest(g_entity))
+        except Exception as err:
+            logger.error(err)
 
     except ChatAdminRequiredError:
         logger.error('Chat admin privileges does not allow you to scrape members ... Skipping this group')
