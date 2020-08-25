@@ -16,6 +16,7 @@
             <th scope="col">ای پی ای آیدی</th>
             <th scope="col">ای پی ای هش</th>
             <th scope="col"> وضعیت محدودیت </th>
+            <th scope="col">وضعیت فعالیت</th>
         </tr>
         </thead>
         <tbody>
@@ -29,6 +30,11 @@
                         <td class=" font-italic font-weight-bold"> محدود شده</td>
                     {% else  %}
                         <td class=" font-italic font-weight-bold"> بدون محدودیت</td>
+                    {% endif %}
+                    {% if worker.active == True %}
+                        <td class=" font-italic font-weight-bold"> فعال</td>
+                    {% else  %}
+                        <td class=" font-italic font-weight-bold"> غیر فعال</td>
                     {% endif %}
                 </tr>
             {% endfor %}

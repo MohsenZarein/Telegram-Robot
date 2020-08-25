@@ -48,7 +48,7 @@ def Scraping():
     try:
 
         try:
-            workers_list = Workers.objects.filter(limited=False)
+            workers_list = Workers.objects.filter(limited=False , active=False)
         except exceptions.ObjectDoesNotExist as err:
             logger.error(err)
             return
@@ -73,6 +73,8 @@ def Scraping():
                     worker_and_client_obj = [client,worker]
                     clients.append(worker_and_client_obj)
                     logger.info('a client connected...')
+                    worker.active = True
+                    worker.save()
                     sleep(5)
             except:
                 sleep(7)
@@ -90,6 +92,8 @@ def Scraping():
                         worker_and_client_obj = [client,worker]
                         clients.append(worker_and_client_obj)
                         logger.info('a client connected...')
+                        worker.active = True
+                        worker.save()
                         sleep(5)
                 except Exception as err:
                     logger.error(err)
@@ -110,12 +114,16 @@ def Scraping():
             logger.error('There is not any source groups in database !')
             for i in range(len(clients)):
                 clients[i][0].disconnect()
+                client[i][1].active = False
+                clients[i][1].save()
                 sleep(1)
             return
         except Exception as err:
             logger.error(err)
             for i in range(len(clients)):
                 clients[i][0].disconnect()
+                client[i][1].active = False
+                clients[i][1].save()
                 sleep(1)
             return
         
@@ -158,6 +166,8 @@ def Scraping():
                 counter = 0
                 for member in FULL_MEMBER_LIST[2]:
                     if counter < limit:
+                        if member.bot == True:
+                            continue
                         if not Members.objects.filter(member_id=member.id).exists():
                             if member.username:
                                 username = member.username
@@ -174,19 +184,21 @@ def Scraping():
                             counter = counter + 1
                         
 
-                    else: 
+                    else:
                         break
                 
+
+                logger.info('saved successfuly!')
+
                 if counter < limit :
                     break 
 
                 FULL_MEMBER_LIST = []
                 sleep(15)
 
-            logger.info('saved successfuly!')
-            logger.info('Going to sleep for 120 sec')
-            sleep(120)
+            
             logger.info('1 group complted ....')
+            sleep(120)
 
         
         logger.info('Action completed !')
@@ -194,6 +206,8 @@ def Scraping():
 
         for i in range(len(clients)):
             clients[i][0].disconnect()
+            clients[i][1].active = False
+            clients[i][1].save()
             sleep(1)
 
 
@@ -204,6 +218,8 @@ def Scraping():
     except KeyboardInterrupt:
         for i in range(len(clients)):
             clients[i][0].disconnect()
+            clients[i][1].active = False
+            clients[i][1].save()
             sleep(1)
         logger.error('EXITED')
         return
@@ -212,6 +228,8 @@ def Scraping():
         logger.error('EXITED')
         for i in range(len(clients)):
             clients[i][0].disconnect()
+            clients[i][1].active = False
+            clients[i][1].save()
             sleep(1)
         return
 
@@ -240,6 +258,8 @@ def Scrap(client , group):
 
         except Exception as err:
             logger.error(err)
+            client[1].active = False
+            client[1].save()
             return
             
     
@@ -258,17 +278,22 @@ def Scrap(client , group):
 
     except ChatAdminRequiredError:
         logger.error('Chat admin privileges does not allow you to scrape members ... Skipping this group')
+        client[1].active = False
+        client[1].save()
         return
     except FloodWaitError as err:
         logger.error('Something wrong with the server , Have to sleep ' + err.seconds + ' seconds')
-        sleep(err.seconds)
+        client[1].active = False
+        client[1].save()
         return
     except PeerFloodError as err:
         logger.info(err)
-        logger.info('Going for 300-350 sec sleep')
-        sleep(random.randrange(300,350))
+        client[1].active = False
+        client[1].save()
         return
     except Exception as err:
         logger.error('Unexpected error while scraping ... Skipping this group')
         logger.error(err)
+        client[1].active = False
+        client[1].save()
         return

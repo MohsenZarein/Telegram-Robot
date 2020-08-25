@@ -38,9 +38,12 @@ logger.addHandler(console_handler)
 """ End Configuration """
 
 
+campains = []
+def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain):
 
-def Add_Members_To_Target_Groups(worker , group , members_list):
-
+    global campains
+    campains.append(0)
+    
     logger.info('START ADDING TO {0}...'.format(group))
     sleep(5)
     try:
@@ -68,6 +71,8 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                     return
             except Exception as err:
                 logger.error(err)
+                worker.active = False
+                worker.save()
                 return
                 
 
@@ -92,6 +97,8 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 logger.error(err)
                 logger.error('Skipping This Worker...')
                 client.disconnect()
+                worker.active = False
+                worker.save()
                 return
         
         target = InputPeerChannel(
@@ -123,6 +130,13 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 max_retry_for_peerflood = 7
 
                 logger.info("User Added ... going to sleep for 900-1000 sec")
+                campains[campain] = campains[campain] + 1
+                if campains[campain] > rate:
+                    client.disconnect()
+                    worker.active = False
+                    worker.save()
+                    return
+
                 sleep(random.randrange(900,1000))
                 
             except PeerFloodError:
@@ -131,9 +145,15 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 max_retry_for_peerflood = max_retry_for_peerflood - 1
                 if max_retry_for_peerflood <= 0 :
                     logger.error("This worker is limited ... Returned")
-                    this_worker = Workers.objects.get(worker_api_hash=worker.worker_api_hash)
-                    this_worker.limited = True
-                    this_worker.save()
+                    worker.limited = True
+                    worker.active = False
+                    worker.save()
+                    client.disconnect()
+                    return
+                if campains[campain] > rate:
+                    client.disconnect()
+                    worker.active = False
+                    worker.save()
                     return
                 sleep(random.randrange(1000,1100))
                 continue
@@ -148,6 +168,11 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                 this_member.adding_permision = False
                 this_member.save()
                 max_retry_for_peerflood = 7
+                if campains[campain] > rate:
+                    client.disconnect()
+                    worker.active = False
+                    worker.save()
+                    return
                 sleep(random.randrange(800,900))
                 continue
             except Exception as err:
@@ -167,26 +192,44 @@ def Add_Members_To_Target_Groups(worker , group , members_list):
                     this_member.member_joined_groups.append(group)
                     this_member.save()
                     logger.info("User Added ... going to sleep for 900-1000 sec")
+                    if campains[campain] > rate:
+                        client.disconnect()
+                        worker.active = False
+                        worker.save()
+                        return
                     sleep(random.randrange(900,1000))
                 except Exception as err:
                     logger.error(err)
                     logger.error("Going for 800-900 sec sleep")
+                    if campains[campain] > rate:
+                        client.disconnect()
+                        worker.active = False
+                        worker.save()
+                        return
                     sleep(random.randrange(800,900))
                     continue
 
         logger.info('Action completed')
+        worker.active = False
+        worker.save()
         client.disconnect()
     
 
     except ConnectionError as err:
         logger.error(err)
         logger.info('----Use a proxy or VPN-----')
+        worker.active = False
+        worker.save()
         return
     except KeyboardInterrupt:
         print('keyboard interupt...')
+        worker.active = False
+        worker.save()
         client.disconnect()
         return
     except Exception as err:
         logger.error(err)
+        worker.active = False
+        worker.save()
         client.disconnect()
         return

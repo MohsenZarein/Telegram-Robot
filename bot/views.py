@@ -304,17 +304,20 @@ def Scrap_Members(request):
 
 
 
-
+campain_counter = 0
 def Add_Members(request):
+
+    global campain_counter
 
     if request.method == 'POST':
 
         target_group = request.POST['target_group_link']
         source_group = request.POST['source_group_link']
-        rate = int(request.POST['rate']) + 5
+        rate = int(request.POST['rate'])
+        num_of_workers = int(request.POST['num_of_workers'])
         
         try:
-            workers_list = Workers.objects.filter(limited=False)
+            workers_list = Workers.objects.filter(limited=False , active=False)[:num_of_workers]
         except exceptions.ObjectDoesNotExist as err:
             logger.error(err)
             return
@@ -322,7 +325,7 @@ def Add_Members(request):
             logger.error(err)
             return
 
-
+        campain_counter = campain_counter + 1
         for worker in workers_list:
             if source_group:
                 members_list =  Members.objects.filter(
@@ -330,16 +333,18 @@ def Add_Members(request):
                                                     ~Q(member_joined_groups__contains=[target_group]) & 
                                                     Q(adding_permision=True) & 
                                                     Q(member_source_group=source_group)
-                    )[:rate]
+                    )
             else:
                 members_list =  Members.objects.filter(
                                                     Q(scraped_by=worker) & 
                                                     ~Q(member_joined_groups__contains=[target_group]) & 
                                                     Q(adding_permision=True)
-                    )[:rate]
+                    )
 
             
-            threading.Thread(target=Add_Members_To_Target_Groups , args=(worker,target_group,members_list)).start()
+            threading.Thread(target=Add_Members_To_Target_Groups , args=(worker,target_group,members_list,rate,campain_counter - 1)).start()
+            worker.active = True
+            worker.save()
             sleep(2)
 
         messages.success(request , 'اضافه کردن کاربران به گروه هدف آغاز شد , میتوانید لاگ های ربات را در کنسول مشاهده کنید')
