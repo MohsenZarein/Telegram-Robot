@@ -131,6 +131,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
 
                 logger.info("User Added ... going to sleep for 900-1000 sec")
                 campains[campain] = campains[campain] + 1
+                print("added members in cmp {0} so far : {1}".format(campain,campains[campain]))
                 if campains[campain] > rate:
                     client.disconnect()
                     worker.active = False
@@ -212,7 +213,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
         logger.info('Action completed')
         worker.active = False
         worker.save()
-        
+
         try:
             client(LeaveChannelRequest(group_entity))
         except Exception as err:
