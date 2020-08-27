@@ -2,7 +2,7 @@ from telethon import TelegramClient
 from telethon.tl.functions.messages import ImportChatInviteRequest , AddChatUserRequest 
 from telethon.tl.types import InputPeerEmpty , InputPeerChannel  , InputUser , InputPeerChat
 from telethon.tl.functions.channels import InviteToChannelRequest , JoinChannelRequest , LeaveChannelRequest
-from telethon.errors import PeerFloodError , UserPrivacyRestrictedError , ChatAdminRequiredError , FloodWaitError
+from telethon.errors import PeerFloodError , UserPrivacyRestrictedError , ChatWriteForbiddenError , FloodWaitError  
 
 from bot.models import Source_Groups
 from bot.models import Target_Groups
@@ -136,6 +136,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                     client.disconnect()
                     worker.active = False
                     worker.save()
+                    logger.info('Action completed')
                     return
 
                 sleep(random.randrange(900,1000))
@@ -155,6 +156,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                     client.disconnect()
                     worker.active = False
                     worker.save()
+                    logger.info('Action completed')
                     return
                 sleep(random.randrange(1000,1100))
                 continue
@@ -173,9 +175,16 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                     client.disconnect()
                     worker.active = False
                     worker.save()
+                    logger.info('Action completed')
                     return
                 sleep(random.randrange(800,900))
                 continue
+            except ChatWriteForbiddenError as err:
+                logger.error(err)
+                client.disconnect()
+                worker.active = False
+                worker.save()
+                return
             except Exception as err:
                 logger.error(err)
                 try:
@@ -197,6 +206,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                         client.disconnect()
                         worker.active = False
                         worker.save()
+                        logger.info('Action completed')
                         return
                     sleep(random.randrange(900,1000))
                 except Exception as err:
@@ -206,6 +216,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                         client.disconnect()
                         worker.active = False
                         worker.save()
+                        logger.info('Action completed')
                         return
                     sleep(random.randrange(800,900))
                     continue

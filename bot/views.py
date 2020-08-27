@@ -61,6 +61,11 @@ def index(request):
 
 
 
+def about(request):
+
+    return render(request , 'bot/about.html')
+
+
 def list_of_members(request):
 
     return render(request , 'bot/list-of-members.html')
