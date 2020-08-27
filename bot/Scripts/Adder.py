@@ -133,6 +133,10 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                 campains[campain] = campains[campain] + 1
                 print("added members in cmp {0} so far : {1}".format(campain,campains[campain]))
                 if campains[campain] > rate:
+                    try:
+                        client(LeaveChannelRequest(group_entity))
+                    except Exception as err:
+                        logger.error(err)
                     client.disconnect()
                     worker.active = False
                     worker.save()
@@ -153,6 +157,10 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                     client.disconnect()
                     return
                 if campains[campain] > rate:
+                    try:
+                        client(LeaveChannelRequest(group_entity))
+                    except Exception as err:
+                        logger.error(err)
                     client.disconnect()
                     worker.active = False
                     worker.save()
@@ -172,6 +180,10 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                 this_member.save()
                 max_retry_for_peerflood = 7
                 if campains[campain] > rate:
+                    try:
+                        client(LeaveChannelRequest(group_entity))
+                    except Exception as err:
+                        logger.error(err)
                     client.disconnect()
                     worker.active = False
                     worker.save()
@@ -181,6 +193,10 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                 continue
             except ChatWriteForbiddenError as err:
                 logger.error(err)
+                try:
+                    client(LeaveChannelRequest(group_entity))
+                except Exception as err:
+                    logger.error(err)
                 client.disconnect()
                 worker.active = False
                 worker.save()
@@ -203,6 +219,10 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                     this_member.save()
                     logger.info("User Added ... going to sleep for 900-1000 sec")
                     if campains[campain] > rate:
+                        try:
+                            client(LeaveChannelRequest(group_entity))
+                        except Exception as err:
+                            logger.error(err)
                         client.disconnect()
                         worker.active = False
                         worker.save()
@@ -213,6 +233,10 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                     logger.error(err)
                     logger.error("Going for 800-900 sec sleep")
                     if campains[campain] > rate:
+                        try:
+                            client(LeaveChannelRequest(group_entity))
+                        except Exception as err:
+                            logger.error(err)
                         client.disconnect()
                         worker.active = False
                         worker.save()
