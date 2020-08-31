@@ -244,17 +244,17 @@ def Scrap(client , group):
     logger.info('Getting entity of {0}'.format(group.link))
     try:
         g_entity = client[0].get_entity(group.link)
-        sleep(random.randrange(80,110))
+        sleep(random.randrange(10,15))
         client[0](JoinChannelRequest(g_entity))
         logger.info('Joined source channel')
-        sleep(random.randrange(80,110))
+        sleep(random.randrange(10,15))
     except Exception:
         try:
             client[0](ImportChatInviteRequest(group.link.split('/')[-1]))
             logger.info('Joined source chat')
-            sleep(random.randrange(80,110))
+            sleep(random.randrange(10,15))
             g_entity = client[0].get_entity(group.link)
-            sleep(random.randrange(80,110))
+            sleep(random.randrange(10,15))
 
         except Exception as err:
             logger.error(err)
