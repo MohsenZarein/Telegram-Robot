@@ -138,8 +138,8 @@ def Scraping():
                 data = clients[0][0](GetFullChannelRequest(group.link))
                 limit = int(data.full_chat.participants_count / len(clients))
             
-            if limit > 180:
-                limit = 180
+            if limit > 250:
+                limit = 250
 
             print('limit :',limit)
             
