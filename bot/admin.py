@@ -11,7 +11,7 @@ class BotAdminMembers(admin.ModelAdmin):
 
 class BotAdminWorkers(admin.ModelAdmin):
     search_fields = ('worker_api_id','worker_api_hash','worker_phone',)
-    list_display = ('worker_api_id','worker_api_hash','worker_phone',)
+    list_display = ('worker_api_id','worker_api_hash','worker_phone','limited','active',)
     list_display_links = ('worker_phone',)
     list_per_page = 100
 

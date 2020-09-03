@@ -128,16 +128,33 @@ def Scraping():
             return
         
         for group in groups:
+
+            limit = -1
+            for i in range(len(clients)):
+                try:
+                    data = clients[i][0](GetFullChannelRequest(group.link))
+                    limit = int(data.full_chat.participants_count / len(clients))
+                    break
+                except:
+                    try:
+                        clients[0][0](ImportChatInviteRequest(group.link.split('/')[-1]))
+                        sleep(7)
+                        data = clients[0][0](GetFullChannelRequest(group.link))
+                        limit = int(data.full_chat.participants_count / len(clients))
+                        break
+                    except:
+                        continue
             
-            try:
-                data = clients[0][0](GetFullChannelRequest(group.link))
-                limit = int(data.full_chat.participants_count / len(clients))
-            except:
-                clients[0][0](ImportChatInviteRequest(group.link.split('/')[-1]))
-                sleep(7)
-                data = clients[0][0](GetFullChannelRequest(group.link))
-                limit = int(data.full_chat.participants_count / len(clients))
-            
+            if limit == -1:
+                logger.error("None of the clients could get data from source . maybe they are blocked from source group . Returning all workers ...")
+                for i in range(len(clients)):
+                    clients[i][0].disconnect()
+                    clients[i][1].active = False
+                    clients[i][1].save()
+                    sleep(1)
+                return
+
+
             if limit > 250:
                 limit = 250
 
@@ -160,43 +177,46 @@ def Scraping():
                 #for worker in workers_threads:
                     #worker.join()
                 
+                if FULL_MEMBER_LIST:
 
-                logger.info('Now saving members of {0} into database ...'.format(group.link))
-            
-                counter = 0
-                for member in FULL_MEMBER_LIST[2]:
-                    if counter < limit:
-                        if member.bot == True:
-                            continue
-                        if not Members.objects.filter(member_id=member.id).exists():
-                            if member.username:
-                                username = member.username
-                            else:
-                                username = ""
-                            a_member = Members.objects.create(
-                                                            member_id=member.id,
-                                                            member_access_hash=member.access_hash,
-                                                            member_username=username,
-                                                            member_source_group=FULL_MEMBER_LIST[1],
-                                                            scraped_by=FULL_MEMBER_LIST[0]
-                            )
-                            a_member.save()
-                            counter = counter + 1
-                        
-
-                    else:
-                        break
+                    logger.info('Now saving members of {0} into database ...'.format(group.link))
                 
+                    counter = 0
+                    for member in FULL_MEMBER_LIST[2]:
+                        if counter < limit:
+                            if member.bot == True:
+                                continue
+                            if not Members.objects.filter(member_id=member.id).exists():
+                                if member.username:
+                                    username = member.username
+                                else:
+                                    username = ""
+                                a_member = Members.objects.create(
+                                                                member_id=member.id,
+                                                                member_access_hash=member.access_hash,
+                                                                member_username=username,
+                                                                member_source_group=FULL_MEMBER_LIST[1],
+                                                                scraped_by=FULL_MEMBER_LIST[0]
+                                )
+                                a_member.save()
+                                counter = counter + 1
+                            
 
-                logger.info('saved successfuly!')
+                        else:
+                            break
+                    
 
-                if counter < limit :
-                    break 
+                    logger.info('saved successfuly!')
 
-                FULL_MEMBER_LIST = []
-                sleep(15)
+                    if counter < limit :
+                        break 
 
-            
+                    FULL_MEMBER_LIST = []
+                    sleep(15)
+
+                else:
+                    logger.error('0 members scraped . skipping this worker ...')
+
             logger.info('1 group complted ....')
             sleep(120)
 
