@@ -207,13 +207,15 @@ def Scraping(num_of_workers):
                             break
                     
 
-                    logger.info('saved successfuly!')
+                    logger.info('saved {0} successfuly!'.format(counter))
                     
                     FULL_MEMBER_LIST[0].worker_source_groups.append(FULL_MEMBER_LIST[1])
                     FULL_MEMBER_LIST[0].save()
 
+                    """
                     if counter < limit :
-                        break 
+                        break
+                    """
 
                     FULL_MEMBER_LIST = []
                     sleep(15)
