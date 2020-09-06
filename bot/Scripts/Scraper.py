@@ -40,7 +40,7 @@ logger.addHandler(console_handler)
 
 
 FULL_MEMBER_LIST = []
-def Scraping():
+def Scraping(num_of_workers):
 
     global FULL_MEMBER_LIST
 
@@ -48,7 +48,7 @@ def Scraping():
     try:
 
         try:
-            workers_list = Workers.objects.filter(limited=False , active=False)
+            workers_list = Workers.objects.filter(limited=False , active=False)[:num_of_workers]
         except exceptions.ObjectDoesNotExist as err:
             logger.error(err)
             return
@@ -152,6 +152,7 @@ def Scraping():
                     clients[i][1].active = False
                     clients[i][1].save()
                     sleep(1)
+                Source_Groups.objects.all().delete()
                 return
 
 
@@ -207,6 +208,9 @@ def Scraping():
                     
 
                     logger.info('saved successfuly!')
+                    
+                    FULL_MEMBER_LIST[0].worker_source_groups.append(FULL_MEMBER_LIST[1])
+                    FULL_MEMBER_LIST[0].save()
 
                     if counter < limit :
                         break 

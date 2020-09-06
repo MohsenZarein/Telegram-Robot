@@ -24,6 +24,7 @@ class Workers(models.Model):
     worker_api_id = models.CharField(max_length=100)
     worker_api_hash = models.CharField(max_length=200)
     worker_phone = models.CharField(max_length=50)
+    worker_source_groups = ArrayField(models.CharField(max_length=200) , blank=True , default=list)
     limited = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
 

@@ -298,8 +298,13 @@ def Authenticate_Worker(request):
 def Scrap_Members(request):
 
     if request.method == 'POST':
+
+        if request.POST['num_of_workers']:
+            num_of_workers = int(request.POST['num_of_workers'])
+        else:
+            num_of_workers = Workers.objects.all().count()
         
-        threading.Thread(target=Scraping).start()
+        threading.Thread(target=Scraping , args=(num_of_workers,)).start()
         messages.success(request , 'استخراج کاربران آغاز شد , میتوانید لاگ های ربات را در کنسول مشاهده کنید')
         return redirect('index')
 
@@ -322,7 +327,10 @@ def Add_Members(request):
         num_of_workers = int(request.POST['num_of_workers'])
         
         try:
-            workers_list = Workers.objects.filter(limited=False , active=False)[:num_of_workers]
+            if source_group:
+                workers_list = Workers.objects.filter(limited=False , active=False , worker_source_groups__contains=[source_group])[:num_of_workers]
+            else:
+                workers_list = Workers.objects.filter(limited=False , active=False)[:num_of_workers]
         except exceptions.ObjectDoesNotExist as err:
             logger.error(err)
             return
