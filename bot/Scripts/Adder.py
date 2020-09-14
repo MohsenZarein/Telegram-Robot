@@ -145,12 +145,16 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
 
                 sleep(random.randrange(900,1000))
                 
-            except PeerFloodError:
-                logger.info("Peer flood error ! Too many requests on destination server !")
+            except PeerFloodError as err:
+                logger.info(err)
                 logger.info('Going for 1000 - 1100 sec sleep')
                 max_retry_for_peerflood = max_retry_for_peerflood - 1
                 if max_retry_for_peerflood <= 0 :
                     logger.error("This worker is limited ... Returned")
+                    try:
+                        client(LeaveChannelRequest(group_entity))
+                    except Exception as err:
+                        logger.error(err)
                     worker.limited = True
                     worker.active = False
                     worker.save()
