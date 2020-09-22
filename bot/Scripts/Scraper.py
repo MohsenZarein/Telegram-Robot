@@ -156,8 +156,8 @@ def Scraping(num_of_workers):
                 return
 
 
-            if limit > 250:
-                limit = 250
+            if limit > 200:
+                limit = 200
 
             print('limit :',limit)
             
