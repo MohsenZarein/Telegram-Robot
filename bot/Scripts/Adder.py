@@ -129,7 +129,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
 
                 max_retry_for_peerflood = 7
 
-                logger.info("User Added ... going to sleep for 900-1000 sec")
+                logger.info("User Added ... / going to sleep for 900-1000 sec")
                 campains[campain] = campains[campain] + 1
                 print("added members in cmp {0} so far : {1}".format(campain,campains[campain]))
                 if campains[campain] > rate:
@@ -146,8 +146,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                 sleep(random.randrange(900,1000))
                 
             except PeerFloodError as err:
-                logger.info(err)
-                logger.info('Going for 1000 - 1100 sec sleep')
+                logger.info("Peer flood error! Too many request on destination server / Going for 1000 - 1100 sec sleep")
                 max_retry_for_peerflood = max_retry_for_peerflood - 1
                 if max_retry_for_peerflood <= 0 :
                     logger.error("This worker is limited ... Returned")
@@ -177,8 +176,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                 sleep(err.seconds)
                 continue
             except UserPrivacyRestrictedError:
-                logger.info("This user's privacy does not allow you to do this ... Skipping this user")
-                logger.info("Going for 900-1000 sec sleep")
+                logger.info("This user's privacy does not allow you to do this. Skipping this user... / Going for 900-1000 sec sleep")
                 this_member = Members.objects.get(member_id=member.member_id)
                 this_member.adding_permision = False
                 this_member.save()
