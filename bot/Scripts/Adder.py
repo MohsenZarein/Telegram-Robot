@@ -106,12 +106,30 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                                 int(group_entity.access_hash)
         )
 
+        try:
+            target_group_members = client.get_participants(group_entity,aggressive=True)
+        except Exception:
+            logger.error("Could not get target_group_members !")
+        
+        if not target_group_members:
+            logger.error("Could not get target_group_members !")
+
         max_retry_for_peerflood = 7
 
         for member in members_list:
     
             try:
                 logger.info("Adding {0}  {1} ...".format(int(member.member_id),member.member_username))
+
+                flag = False
+                for user in target_group_members:
+                    if str(member.member_id) == str(user.id) :
+                        logger.info("This user has already been a member of this group . Skipping ...")
+                        flag = True
+                        break
+                
+                if flag == True:
+                    continue
                 
                 user_ready_to_add = InputUser(
                                               user_id=int(member.member_id),
