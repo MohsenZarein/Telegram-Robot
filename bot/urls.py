@@ -14,7 +14,6 @@ urlpatterns = [
     path('bot/authenticate-worker' , views.Authenticate_Worker , name='authenticate-worker'),
     path('bot/num-of-members-scrp-by-each-wrk' , views.number_of_members_scraped_by_each_worker , name='number-of-members-scraped-by-each-worker'),
     path('bot/num-of-members-scrp-by-each-wrk-dis',views.number_of_members_scraped_by_each_worker_display,name='number-of-members-scraped-by-each-worker-display'),
-    path('bot/about' ,views.about , name='about' ),
 
     
 ]
