@@ -107,12 +107,17 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
         )
 
         try:
+            logger.info("Getting target_group_members ...")
             target_group_members = client.get_participants(group_entity,aggressive=True)
+            logger.info("Finished getting target_group_members!")
+            sleep(random.randrange(900,1000))
         except Exception:
             logger.error("Could not get target_group_members !")
+            sleep(random.randrange(70,90))
         
         if not target_group_members:
-            logger.error("Could not get target_group_members !")
+            logger.error("Could not get target_group_members - list is empty!")
+            sleep(random.randrange(70,90))
 
         max_retry_for_peerflood = 7
 
@@ -194,7 +199,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                 sleep(err.seconds)
                 continue
             except UserPrivacyRestrictedError:
-                logger.info("This user's privacy does not allow you to do this. Skipping this user... / Going for 900-1000 sec sleep")
+                logger.info("This user's privacy does not allow you add / Going for 900-1000 sec sleep")
                 this_member = Members.objects.get(member_id=member.member_id)
                 this_member.adding_permision = False
                 this_member.save()

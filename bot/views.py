@@ -328,10 +328,12 @@ def Add_Members(request):
                 workers_list = Workers.objects.filter(limited=False , active=False)[:num_of_workers]
         except exceptions.ObjectDoesNotExist as err:
             logger.error(err)
-            return
+            messages.error(request , 'خطا در اماده سازی اکانت ورکر')
+            return redirect('add-members')
         except Exception as err:
             logger.error(err)
-            return
+            messages.error(request , 'خطا در اماده سازی اکانت ورکر')
+            return redirect('add-members')
 
         campain_counter = campain_counter + 1
         for worker in workers_list:
@@ -353,7 +355,7 @@ def Add_Members(request):
             threading.Thread(target=Add_Members_To_Target_Groups , args=(worker,target_group,members_list,rate,campain_counter - 1)).start()
             worker.active = True
             worker.save()
-            sleep(2)
+            sleep(1)
 
         messages.success(request , 'اضافه کردن کاربران به گروه هدف آغاز شد , میتوانید لاگ های ربات را در کنسول مشاهده کنید')
         return redirect('add-members')
