@@ -133,14 +133,32 @@ def Scraping(num_of_workers):
             for i in range(len(clients)):
                 try:
                     data = clients[i][0](GetFullChannelRequest(group.link))
-                    limit = int(data.full_chat.participants_count / len(clients))
+                    all_participants_count = int((data.full_chat.participants_count * 96) / 100)
+                    all_scraped_participants_count = Members.objects.filter(member_source_group=group.link).count()
+                    if not all_scraped_participants_count == 0:
+                        logger.info("This group has been scraped once with {0} members".format(all_scraped_participants_count))
+                    diff = all_participants_count - all_scraped_participants_count
+                    if diff > (len(clients) * 3):
+                        limit = int(diff / len(clients))
+                    else:
+                        logger.info("You have almost extract all members from this group")
+                        return
                     break
                 except:
                     try:
                         clients[0][0](ImportChatInviteRequest(group.link.split('/')[-1]))
                         sleep(7)
                         data = clients[0][0](GetFullChannelRequest(group.link))
-                        limit = int(data.full_chat.participants_count / len(clients))
+                        all_participants_count = int((data.full_chat.participants_count * 96) / 100)
+                        all_scraped_participants_count = Members.objects.filter(member_source_group=group.link).count()
+                        if not all_scraped_participants_count == 0:
+                            logger.info("This group has been scraped once with {0} members".format(all_scraped_participants_count))
+                        diff = all_participants_count - all_scraped_participants_count
+                        if diff > (len(clients) * 3):
+                            limit = int(diff / len(clients))
+                        else:
+                            logger.info("You have almost extract all members from this group")
+                            return
                         break
                     except:
                         continue
