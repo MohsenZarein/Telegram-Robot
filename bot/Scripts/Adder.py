@@ -146,9 +146,11 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                                              [user_ready_to_add]
                 ))
                 
-                this_member = Members.objects.get(member_id=member.member_id)
-                this_member.member_joined_groups.append(group)
-                this_member.save()
+
+                this_member = Members.objects.filter(member_id=member.member_id)
+                for i in this_member:
+                    i.member_joined_groups.append(group)
+                    i.save()
 
                 max_retry_for_peerflood = 7
 
@@ -200,9 +202,10 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                 continue
             except UserPrivacyRestrictedError:
                 logger.info("This user's privacy does not allow you add / Going for 900-1000 sec sleep")
-                this_member = Members.objects.get(member_id=member.member_id)
-                this_member.adding_permision = False
-                this_member.save()
+                this_member = Members.objects.filter(member_id=member.member_id)
+                for i in this_member:
+                    i.adding_permision = False
+                    i.save()
                 max_retry_for_peerflood = 7
                 if campains[campain] > rate:
                     try:
@@ -228,6 +231,8 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                 return
             except Exception as err:
                 logger.error(err)
+                sleep(random.randrange(800,900))
+                """
                 try:
                     user_ready_to_add = InputUser(
                         user_id=int(member.member_id),
@@ -269,6 +274,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                         return
                     sleep(random.randrange(800,900))
                     continue
+                """
 
         logger.info('Action completed')
         worker.active = False

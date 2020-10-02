@@ -187,7 +187,7 @@ def Scraping(num_of_workers):
                         if counter < limit:
                             if member.bot == True:
                                 continue
-                            if not Members.objects.filter(member_id=member.id).exists():
+                            if not Members.objects.filter(member_id=member.id , member_source_group=group.link).exists():
                                 if member.username:
                                     username = member.username
                                 else:
