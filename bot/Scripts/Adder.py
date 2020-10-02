@@ -106,6 +106,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                                 int(group_entity.access_hash)
         )
 
+        """
         try:
             logger.info("Getting target_group_members ...")
             target_group_members = client.get_participants(group_entity,aggressive=True)
@@ -119,6 +120,8 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
             logger.error("Could not get target_group_members - list is empty!")
             sleep(random.randrange(70,90))
 
+        """
+
         max_retry_for_peerflood = 7
 
         for member in members_list:
@@ -126,6 +129,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
             try:
                 logger.info("Adding {0}  {1} ...".format(int(member.member_id),member.member_username))
 
+                """
                 flag = False
                 for user in target_group_members:
                     if str(member.member_id) == str(user.id) :
@@ -135,6 +139,7 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
                 
                 if flag == True:
                     continue
+                """
                 
                 user_ready_to_add = InputUser(
                                               user_id=int(member.member_id),
