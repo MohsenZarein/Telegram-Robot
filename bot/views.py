@@ -1,10 +1,13 @@
-from django.shortcuts import render , redirect
+from django.shortcuts import render, render_to_response, redirect
+from django.views import View
+from django.utils.decorators import method_decorator
+from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import csrf_exempt
 from django.core import exceptions
 from django.http import HttpResponse
 from django.contrib import messages
 from django.db.models import Q
-from django.core.paginator import Paginator , PageNotAnInteger , EmptyPage
-
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 from .models import Source_Groups
 from .models import Target_Groups
@@ -12,21 +15,14 @@ from .models import Workers
 from .models import Members
 
 from telethon import TelegramClient
-"""
-from telethon.tl.functions.messages import GetDialogsRequest , CheckChatInviteRequest , ImportChatInviteRequest , AddChatUserRequest 
-from telethon.tl.types import InputPeerEmpty , InputPeerChannel  ,UserStatusLastMonth  , ChannelParticipantsSearch , InputUser,InputPeerChat
-from telethon.tl.functions.channels import InviteToChannelRequest , JoinChannelRequest , GetParticipantsRequest , GetFullChannelRequest
-from telethon.errors import PeerFloodError , UserPrivacyRestrictedError , ChatAdminRequiredError , FloodWaitError ,ChannelPrivateError 
-"""
+
 from time import sleep
 import threading
 import datetime
 import logging
 
-
 from .Scripts.Scraper import Scraping
 from .Scripts.Adder import Add_Members_To_Target_Groups
-
 
 
 
@@ -50,27 +46,44 @@ logger.addHandler(console_handler)
 
 
 
+class IndexView(View):
 
-def index(request):
+    @method_decorator(require_GET)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
-    workers = Workers.objects.all()
-    context = {
-        "workers":workers
-    }
-    return render(request , 'bot/index.html' , context)
-
-
-
-def list_of_members(request):
-
-    return render(request , 'bot/list-of-members.html')
-
+    def get(self, request):
+        workers = Workers.objects.all()
+        context = {
+            "workers":workers
+        }
+        return render_to_response('bot/index.html', context)
+    
 
 
-def list_of_members_display(request):
 
-    try:
-        link = request.GET['link']
+class ListOfMembersView(View):
+
+    @method_decorator(require_GET)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    
+    def get(self, request):
+        return render(request, 'bot/list-of-members.html')
+
+
+
+class ListOfMembersDisplayView(View):
+
+    @method_decorator(require_GET)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get(self, request):
+        if request.GET['link']:
+            link = request.GET['link']
+        else:
+            link = ""
         desired_members = Members.objects.filter(member_joined_groups__contains=[link]).order_by('member_id')
         paginator = Paginator(desired_members , 100)
         page_number = request.GET.get('page')
@@ -85,47 +98,60 @@ def list_of_members_display(request):
             "page_number":int(page_number)
         }
         
-        return render(request , 'bot/list-of-members-display.html' , context)
+        return render_to_response('bot/list-of-members-display.html' , context)
+        
+        
+
+
+class ListOfPrivacyRestrictedMembersView(View):
+
+    @method_decorator(require_GET)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     
-    except Exception as err:
-        logger.error(err)
-        return render(request , 'bot/list-of-members-display.html')
+    def get(self, request):
+        privacy_restricted_members = Members.objects.filter(adding_permision=False).order_by('-member_id')
+
+        paginator = Paginator(privacy_restricted_members , 100)
+        page_number = request.GET.get('page')
+        paged_privacy_restricted_members = paginator.get_page(page_number)
+
+        if page_number == None:
+            page_number = "1"
+
+        context = {
+            "privacy_restricted_members":paged_privacy_restricted_members,
+            "page_number":int(page_number)
+        }
+        
+        return render_to_response('bot/list-of-privacy-restricted-members.html', context)
+
+
+
+
+class NumberOfMembersScrapedByEachWorkerView(View):
+
+    @method_decorator(require_GET)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
+    def get(self, request):
+        return render(request, 'bot/number-of-members-scraped-by-each-worker.html')
+
     
 
 
-def list_of_privacy_restricted_members(request):
+class NumberOfMembersScrapedByEachWorkerDisplayView(View):
 
-    privacy_restricted_members = Members.objects.filter(adding_permision=False).order_by('-member_id')
-
-    paginator = Paginator(privacy_restricted_members , 100)
-    page_number = request.GET.get('page')
-    paged_privacy_restricted_members = paginator.get_page(page_number)
-
-    if page_number == None:
-        page_number = "1"
-
-    context = {
-        "privacy_restricted_members":paged_privacy_restricted_members,
-        "page_number":int(page_number)
-    }
+    @method_decorator(require_GET)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     
-    return render(request , 'bot/list-of-privacy-restricted-members.html' , context)
-
-
-
-
-
-def number_of_members_scraped_by_each_worker(request):
-
-    return render(request , 'bot/number-of-members-scraped-by-each-worker.html')
-
-
-
-
-def number_of_members_scraped_by_each_worker_display(request):
-    
-    try:
-        link = request.GET['link']
+    def get(self, request):
+        if request.GET['link']:
+            link = request.GET['link']
+        else:
+            link = ""
         workers = Workers.objects.all()
         data = {}
         for worker in workers:
@@ -136,19 +162,17 @@ def number_of_members_scraped_by_each_worker_display(request):
             "data":data
         }
 
-        return render(request,'bot/number-of-members-scraped-by-each-worker-display.html' , context)
-    
-    except Exception as err:
-        logger.error(err)
-        return render(request , 'bot/number-of-members-scraped-by-each-worker-display.html')
+        return render_to_response('bot/number-of-members-scraped-by-each-worker-display.html', context)
 
 
 
-def Add_Source_Group(request):
+class AddSourceGroupView(View):
 
-    if request.method == 'POST':
-
-        link = request.POST['source_group_link']
+    def post(self, request):
+        if request.POST['source_group_link']:
+            link = request.POST['source_group_link']
+        else:
+            link = ""
         if not Source_Groups.objects.filter(link=link).exists():
             source_link = Source_Groups.objects.create(link=link)
             source_link.save()
@@ -158,18 +182,19 @@ def Add_Source_Group(request):
         else:
             messages.error(request,'این گروه را قبلا اضافه کرده اید')
             return redirect('add-source-group')
-            
-    else:
-        return render(request , 'bot/add-source-group.html')
+    
+    def get(self, request):
+        return render(request, 'bot/add-source-group.html')
 
 
 
+class AddTargetGroupView(View):
 
-def Add_Target_Group(request):
-
-    if request.method == 'POST':
-
-        link = request.POST['target_group_link']
+    def post(self, request):
+        if request.POST['target_group_link']:
+            link = request.POST['target_group_link']
+        else:
+            link = ""
         if not Target_Groups.objects.filter(link=link).exists():
             target_link = Target_Groups.objects.create(link=link)
             target_link.save()
@@ -179,15 +204,16 @@ def Add_Target_Group(request):
             messages.error(request,'این گروه را قبلا اضافه کرده اید')
             return redirect('add-target-group')
 
-    else:
+    def get(self, request):
         return render(request , 'bot/add-target-group.html')
 
 
 
-CLIENT = None
-def Add_Worker(request):
 
-    if request.method == 'POST':
+CLIENT = None
+class AddWorkerView(View):
+
+    def post(self, request):
 
         global CLIENT
 
@@ -218,7 +244,7 @@ def Add_Worker(request):
                 CLIENT = client
 
                 messages.success(request,'اکانت ذخیره شد , کد ارسال را شده را برای ثبت وارد کنید')
-                return render(request , 'bot/authenticate-worker.html' , context)
+                return render_to_response('bot/authenticate-worker.html' , context)
             except Exception as err:
                 logger.error(err)
                 messages.error(request , 'خطا در ذخیره اکانت, دوباره تلاش کنید')
@@ -229,15 +255,15 @@ def Add_Worker(request):
             messages.error(request , 'این اکانت ورکر را قبلا اضافه کرده اید')
             return redirect('add-worker')
     
-    else:
+
+    def get(self, request):
         return render(request , 'bot/add-worker.html')
-        
 
 
 
-def Authenticate_Worker(request):
+class AuthenticateWorkerView(View):
 
-    if request.method == 'POST':
+    def post(self, request):
 
         global CLIENT
 
@@ -252,7 +278,6 @@ def Authenticate_Worker(request):
 
 
         try:
-            
             CLIENT.sign_in(
                             phone,
                             code
@@ -279,21 +304,22 @@ def Authenticate_Worker(request):
                     "api_id":api_id,
                     "api_hash":api_hash
                 }
-            return render(request , 'bot/authenticate-worker.html' , context) 
-    
-    else:
-        
+            return render_to_response('bot/authenticate-worker.html' , context)
+
+
+    def get(self, request):
         return render(request , 'bot/authenticate-worker.html')
 
 
 
+class ScrapMembersView(View):
 
-
-
-def Scrap_Members(request):
-
-    if request.method == 'POST':
-
+    @method_decorator(require_POST)
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    
+    def post(self, request):
         if request.POST['num_of_workers']:
             num_of_workers = int(request.POST['num_of_workers'])
         else:
@@ -302,19 +328,16 @@ def Scrap_Members(request):
         threading.Thread(target=Scraping , args=(num_of_workers,)).start()
         messages.success(request , 'استخراج کاربران آغاز شد , میتوانید لاگ های ربات را در کنسول مشاهده کنید')
         return redirect('index')
-
-    else:
-        return render(request , 'bot/index.html')
-
-
+    
+    
 
 
 campain_counter = 0
-def Add_Members(request):
+class AddMembersView(View):
 
-    global campain_counter
+    def post(self, request):
 
-    if request.method == 'POST':
+        global campain_counter
 
         target_group = request.POST['target_group_link']
         source_group = request.POST['source_group_link']
@@ -360,9 +383,6 @@ def Add_Members(request):
         messages.success(request , 'اضافه کردن کاربران به گروه هدف آغاز شد , میتوانید لاگ های ربات را در کنسول مشاهده کنید')
         return redirect('add-members')
 
-    
-    else:
+
+    def get(self, request):
         return render(request , 'bot/add-members.html')
-
-
-        
