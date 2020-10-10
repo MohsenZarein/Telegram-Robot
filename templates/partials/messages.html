@@ -7,9 +7,9 @@
                 </button>
                 <strong>
                     {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
-                        ERROR: 
+                        خطا !
                     {% else %}
-                        {{message.tags | title}}
+                        موفقیت !
                     {% endif %}
                 </strong>
                 {{message}}
