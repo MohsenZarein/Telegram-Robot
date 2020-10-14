@@ -40,7 +40,7 @@ logger.addHandler(console_handler)
 
 
 FULL_MEMBER_LIST = []
-def Scraping(num_of_workers):
+def Scraping(num_of_workers, given_limit):
 
     global FULL_MEMBER_LIST
 
@@ -128,54 +128,67 @@ def Scraping(num_of_workers):
             return
         
         for group in groups:
+            
+            if not given_limit:
 
-            limit = -1
-            for i in range(len(clients)):
-                try:
-                    data = clients[i][0](GetFullChannelRequest(group.link))
-                    all_participants_count = int((data.full_chat.participants_count * 96) / 100)
-                    all_scraped_participants_count = Members.objects.filter(member_source_group=group.link).count()
-                    if not all_scraped_participants_count == 0:
-                        logger.info("This group has been scraped once with {0} members".format(all_scraped_participants_count))
-                    diff = all_participants_count - all_scraped_participants_count
-                    if diff > (len(clients) * 3):
-                        limit = int(diff / len(clients))
-                    else:
-                        logger.info("You have almost extract all members from this group")
-                        return
-                    break
-                except:
+                limit = -1
+                for i in range(len(clients)):
                     try:
-                        clients[0][0](ImportChatInviteRequest(group.link.split('/')[-1]))
-                        sleep(7)
-                        data = clients[0][0](GetFullChannelRequest(group.link))
+                        data = clients[i][0](GetFullChannelRequest(group.link))
                         all_participants_count = int((data.full_chat.participants_count * 96) / 100)
                         all_scraped_participants_count = Members.objects.filter(member_source_group=group.link).count()
+
                         if not all_scraped_participants_count == 0:
                             logger.info("This group has been scraped once with {0} members".format(all_scraped_participants_count))
+
                         diff = all_participants_count - all_scraped_participants_count
+
                         if diff > (len(clients) * 3):
                             limit = int(diff / len(clients))
                         else:
                             logger.info("You have almost extract all members from this group")
                             return
+
                         break
                     except:
-                        continue
-            
-            if limit == -1:
-                logger.error("None of the clients could get data from source . maybe they are blocked from source group . Returning all workers ...")
-                for i in range(len(clients)):
-                    clients[i][0].disconnect()
-                    clients[i][1].active = False
-                    clients[i][1].save()
-                    sleep(1)
-                Source_Groups.objects.all().delete()
-                return
+                        try:
+                            clients[0][0](ImportChatInviteRequest(group.link.split('/')[-1]))
+                            sleep(7)
+                            data = clients[0][0](GetFullChannelRequest(group.link))
+                            all_participants_count = int((data.full_chat.participants_count * 96) / 100)
+                            all_scraped_participants_count = Members.objects.filter(member_source_group=group.link).count()
+
+                            if not all_scraped_participants_count == 0:
+                                logger.info("This group has been scraped once with {0} members".format(all_scraped_participants_count))
+
+                            diff = all_participants_count - all_scraped_participants_count
+
+                            if diff > (len(clients) * 3):
+                                limit = int(diff / len(clients))
+                            else:
+                                logger.info("You have almost extract all members from this group")
+                                return
+
+                            break
+                        except:
+                            continue
+                
+                if limit == -1:
+                    logger.error("None of the clients could get data from source . maybe they are blocked from source group . Returning all workers ...")
+                    for i in range(len(clients)):
+                        clients[i][0].disconnect()
+                        clients[i][1].active = False
+                        clients[i][1].save()
+                        sleep(1)
+                    Source_Groups.objects.all().delete()
+                    return
 
 
-            if limit > 200:
-                limit = 200
+                if limit > 200:
+                    limit = 200
+
+            else:
+                limit = given_limit
 
             print('limit :',limit)
             
@@ -186,8 +199,6 @@ def Scraping(num_of_workers):
                 th.start()
                 th.join()
 
-
-                
                 #for worker in workers_threads:
                     #worker.start()
                     #sleep(1)

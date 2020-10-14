@@ -324,8 +324,12 @@ class ScrapMembersView(View):
             num_of_workers = int(request.POST['num_of_workers'])
         else:
             num_of_workers = Workers.objects.all().count()
+        if request.POST['limit']:
+            limit = int(request.POST['limit'])
+        else:
+            limit = None
         
-        threading.Thread(target=Scraping , args=(num_of_workers,)).start()
+        threading.Thread(target=Scraping , args=(num_of_workers,limit)).start()
         messages.success(request , 'استخراج کاربران آغاز شد , میتوانید لاگ های ربات را در کنسول مشاهده کنید')
         return redirect('index')
     
