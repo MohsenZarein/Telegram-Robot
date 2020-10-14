@@ -39,7 +39,7 @@ logger.addHandler(console_handler)
 
 
 campains = []
-def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain):
+def Add_Members_To_Target_Groups(worker, group, members_list , rate, campain, leave_after_action_completed:bool):
 
     global campains
     campains.append(0)
@@ -285,10 +285,11 @@ def Add_Members_To_Target_Groups(worker , group , members_list  , rate , campain
         worker.active = False
         worker.save()
 
-        try:
-            client(LeaveChannelRequest(group_entity))
-        except Exception as err:
-            logger.error(err)
+        if leave_after_action_completed == True:
+            try:
+                client(LeaveChannelRequest(group_entity))
+            except Exception as err:
+                logger.error(err)
 
         client.disconnect()
     

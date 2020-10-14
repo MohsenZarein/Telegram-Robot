@@ -346,7 +346,12 @@ class AddMembersView(View):
         target_group = request.POST['target_group_link']
         source_group = request.POST['source_group_link']
         rate = int(request.POST['rate'])
-        num_of_workers = int(request.POST['num_of_workers'])
+        leave_after_action_completed = bool(request.POST.get('leave_after_action_completed',''))
+        if request.POST['num_of_workers']:
+            num_of_workers = int(request.POST['num_of_workers'])
+        else:
+            num_of_workers = Workers.objects.all().count()
+        
         
         try:
             if source_group:
@@ -379,7 +384,9 @@ class AddMembersView(View):
                     )
 
             
-            threading.Thread(target=Add_Members_To_Target_Groups , args=(worker,target_group,members_list,rate,campain_counter - 1)).start()
+            threading.Thread(target=Add_Members_To_Target_Groups, 
+                             args=(worker,target_group,members_list,rate,campain_counter - 1,leave_after_action_completed)
+                             ).start()
             worker.active = True
             worker.save()
             sleep(1)
