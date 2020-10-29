@@ -168,6 +168,10 @@ class NumberOfMembersScrapedByEachWorkerDisplayView(View):
 
 class AddSourceGroupView(View):
 
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+
     def post(self, request):
         if request.POST['source_group_link']:
             link = request.POST['source_group_link']
@@ -189,6 +193,10 @@ class AddSourceGroupView(View):
 
 
 class AddTargetGroupView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def post(self, request):
         if request.POST['target_group_link']:
@@ -212,6 +220,10 @@ class AddTargetGroupView(View):
 
 CLIENT = None
 class AddWorkerView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def post(self, request):
 
@@ -262,6 +274,10 @@ class AddWorkerView(View):
 
 
 class AuthenticateWorkerView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def post(self, request):
 
@@ -338,6 +354,10 @@ class ScrapMembersView(View):
 
 campain_counter = 0
 class AddMembersView(View):
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def post(self, request):
 
