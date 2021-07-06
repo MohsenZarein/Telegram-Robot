@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '!vk@^mnd_bb2tzgbr0@^^*&jwo+=24!b$@hi#fnn5r(tz+z1)x'
+SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -80,8 +80,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'telethonbotdb',
-        'USER': 'telegramdbadmin',
-        'PASSWORD': '0260psql',
+        'USER': '', 
+        'PASSWORD': '',
         'HOST': 'localhost'
     }
 }
@@ -132,3 +132,10 @@ from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
     messages.ERROR : 'danger'
 }
+
+
+
+try:
+    from .settings_local import *
+except ImportError:
+    pass
