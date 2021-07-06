@@ -14,5 +14,4 @@ db.sqlite3
 /media
 /static
 Terminal_Bot
-ubuntu@67.223.107.178
-settings_local.py
+Telethon_Bot/settings_local.py
