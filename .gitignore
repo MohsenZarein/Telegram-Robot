@@ -9,9 +9,10 @@ test.py
 *.pot
 *.pyc
 __pycache__/
-local_settings.py
 db.sqlite3
 /media
 /static
 Terminal_Bot
+
 Telethon_Bot/settings_local.py
+settings_local.py
