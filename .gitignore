@@ -14,5 +14,5 @@ db.sqlite3
 /static
 Terminal_Bot
 
-Telethon_Bot/settings_local.py
-settings_local.py
+Telethon_Bot/local_settings.py
+local_settings.py
